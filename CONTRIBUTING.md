@@ -7,38 +7,62 @@ Please follow these guidelines to help us maintain a high-quality codebase and s
 
 ## Getting Started
 
-1. **Fork the repository** and clone it to your local machine.
-2. **Create a new branch** for your feature or bugfix:
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
+### Prerequisites
+
+- **Flutter SDK**: [Install Flutter](https://docs.flutter.dev/get-started/install)
+- **Git**: For cloning the repository
+- **Android Studio** or **VS Code**: With Flutter and Dart plugins
+
+### Installation
+
+1. **Fork the Repository**
+   - Click "Fork" on GitHub to create your own copy.
+
+2. **Clone Your Fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/vhkmsurabhi_flutter.git
+   cd vhkmsurabhi_flutter
+   ```
 3. **Install dependencies**:
     ```bash
     flutter pub get
     ```
-4. **Make your changes** and ensure all tests pass:
+
+4. **Create a new branch** for your feature or bugfix:
+     - For features:
+     ```bash
+     git checkout -b feature/your-feature-name
+     ```
+   - For bug fixes:
+     ```bash
+     git checkout -b bugfix/issue-description
+     ```
+
+5. **Make Your Changes**
+   - Follow Dart and Flutter style guidelines.
+   - Write clear comments where needed.
+
+6. **Write and Run Tests**
+   - Add unit/integration tests for your changes.
+   - Run all tests before committing:
+     ```bash
+     flutter test
+     ```
+7. **Check code style**
     ```bash
-    flutter test
+    flutter analyze
     ```
 
----
+8. **Commit and Push**
+   - Use clear, conventional commit messages (e.g., `feat: add user registration`, `fix: resolve login issue`).
+   - Push your branch:
+     ```bash
+     git push origin feature/your-feature-name
+     ```
 
-## Pull Request Process
-
-- **All pull requests must target the `develop` branch** unless otherwise specified.
-- **Describe your changes** clearly in the PR description.
-- **Reference related issues** in your PR if applicable (e.g., `Fixes #123`).
-- **Ensure your code follows the existing style** and passes all lints and tests.
-- **Do not commit generated files** or files unrelated to your change.
-
----
-
-## Approval Rules
-
-- At least **one approval** from a maintainer is required before merging.
-- **All status checks** (tests, lints) must pass before merging.
-- **Do not merge your own PRs** unless approved by another contributor.
-- Changes to the `lib/` directory must be reviewed by [@praveenkumargurrala](https://github.com/praveenkumargurrala) or [@sudama011](https://github.com/sudama011) as specified in the [CODEOWNERS](.github/CODEOWNERS) file.
+9. **Open a Pull Request**
+   - Target the `develop` branch.
+   - Provide a detailed description and reference related issues (e.g., `Fixes #123`).
 
 ---
 
@@ -51,9 +75,39 @@ Please follow these guidelines to help us maintain a high-quality codebase and s
 
 ---
 
-## Reporting Issues
+## Reporting Bugs
 
-If you find a bug or have a feature request, please [open an issue](https://github.com/praveenkumargurrala/vhkmsurabhi_flutter/issues) and provide as much detail as possible.
+If you find a bug, please [open an issue](https://github.com/praveenkumargurrala/vhkmsurabhi_flutter/issues) and include:
+
+- Clear description of the bug
+- Steps to reproduce
+- Expected behavior
+- Screenshots or error messages (if applicable)
+- Environment details (OS, Python version, etc.)
+
+---
+
+## Feature Requests
+
+We welcome new ideas! Open an issue describing:
+
+- The problem your feature solves
+- How you envision it working
+- Any potential impact or considerations
+
+---
+
+## Pull Request Process
+
+- All PRs must target the `develop` branch.
+- Describe your changes clearly.
+- Reference related issues.
+- Ensure code passes all tests and lints.
+- Do not commit generated or unrelated files.
+- At least one maintainer approval is required before merging.
+- All status checks must pass.
+- Do not merge your own PRs without approval.
+- Changes to `lib/` must be reviewed by code owners as specified in [CODEOWNERS](.github/CODEOWNERS).
 
 ---
 

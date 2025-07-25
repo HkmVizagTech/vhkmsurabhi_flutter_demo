@@ -10,15 +10,7 @@ Surabhi is a comprehensive Flutter mobile application designed for Admins, Emplo
 - Centralized theming and styling
 - Clean code practices using BLoC, Provider, and Dependency Injection
 
-## Getting Started
-
-### Prerequisites
-
-- **Flutter SDK**: [Install Flutter](https://docs.flutter.dev/get-started/install)
-- **Git**: For cloning the repository
-- **Android Studio** or **VS Code**: With Flutter and Dart plugins
-
-### Installation
+## Quick Start
 
 1. **Clone the Repository**
     ```bash
@@ -26,19 +18,9 @@ Surabhi is a comprehensive Flutter mobile application designed for Admins, Emplo
     cd vhkmsurabhi_flutter
     ```
 
-2. **Install Dependencies**
+2. **To run the app on a connected device or emulator:**
     ```bash
     flutter pub get
-    ```
-
-3. **Generate Launcher Icons**
-    ```bash
-    flutter pub run flutter_launcher_icons:main
-    ```
-
-4. **Run the Application**
-    - Connect a device or start an emulator, then run:
-    ```bash
     flutter run
     ```
 
@@ -58,10 +40,10 @@ Surabhi is a comprehensive Flutter mobile application designed for Admins, Emplo
 
 Primary colors are defined in `lib/core/constants/colors.dart` and applied globally via `ThemeData` in `main.dart` for a consistent look and feel.
 
-## Contribution
+## Contribution & Code Ownership
 
-Contributions are welcome!  
-Please fork the repository, create a feature branch, and submit a pull request following standard Git Flow practices.
+We welcome contributions!  
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
@@ -70,4 +52,8 @@ See the [LICENSE.md](LICENSE.md) file for details.
 
 ## Contact
 
-For inquiries or support, please contact: [your-email@example.com]
+For inquiries or support, please open an [issue](https://github.com/praveenkumargurrala/vhkmsurabhi_flutter/issues) or contact the maintainers via GitHub:
+
+- [@praveenkumargurrala](https://github.com/praveenkumargurrala)
+- [@sudama011](https://github.com/sudama011)
+- [@Sdcoder123](https://github.com/Sdcoder123)
