@@ -1,13 +1,15 @@
 // lib/features/auth/data/datasources/auth_remote_datasource.dart
-import 'dart:convert';
-import 'package:surabhi/core/constants/app_constants.dart';
+import 'package:dio/dio.dart';
+import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
-import 'package:surabhi/features/auth/data/models/user_model.dart';
+import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
+import 'package:surabhi/core/constants/api_constants.dart';
+import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
+import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthResponseModel> login(String email, String password);
-  Future<void> register(String email, String password, String role);
-  Future<UserModel> getProfile();
+  Future<AuthResponseModel> login(LoginParams params);
+  Future<void> logout();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -16,31 +18,36 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this.apiClient);
 
   @override
-  Future<AuthResponseModel> login(String email, String password) async {
-    final response = await apiClient.post(
-      AppConstants.LOGIN_ENDPOINT,
-      body: json.encode({'email': email, 'password': password}),
-    );
-    return AuthResponseModel.fromJson(response);
+  Future<AuthResponseModel> login(LoginParams params) async {
+    // FastAPI expects OAuth2PasswordRequestForm (application/x-www-form-urlencoded)
+    try {
+      final response = await apiClient.dio.post(
+        ApiConstants.loginPath,
+        data: {'username': params.email, 'password': params.password},
+        options: Options(contentType: Headers.formUrlEncodedContentType, extra: {'requiresAuth': false}),
+      );
+
+      return AuthResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      // Extract user-friendly message from API response
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Login failed');
+      throw AuthException(message: errorMessage);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
+    }
   }
 
   @override
-  Future<void> register(String email, String password, String role) async {
-    // The Python API's register endpoint currently returns a simple message.
-    // If it were to return a full user model, you'd parse it here.
-    await apiClient.post(
-      AppConstants.REGISTER_ENDPOINT,
-      body: json.encode({'email': email, 'password': password, 'role': role}),
-    );
-    // Assuming 201 Created on success
-  }
-
-  @override
-  Future<UserModel> getProfile() async {
-    final response = await apiClient.get(
-      AppConstants.PROFILE_ENDPOINT,
-      requiresAuth: true,
-    );
-    return UserModel.fromJson(response);
+  Future<void> logout() async {
+    try {
+      final response = await apiClient.dio.post(ApiConstants.logoutPath);
+      return response.data;
+    } on DioException catch (e) {
+      // Extract user-friendly message from API response
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Logout failed');
+      throw ServerException(message: errorMessage);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
+    }
   }
 }

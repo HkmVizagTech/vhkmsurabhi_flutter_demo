@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/pages/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/app_bar_actions.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
@@ -28,23 +29,15 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Surabhi',
-      actions: [
-        AppBarActions.loginButton(context),
-        AppBarActions.registerButton(context),
-      ],
+      actions: [AppBarActions.loginButton(context)],
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            // Navigate based on user role
-            print('Authenticated: User role is ${state.role}');
-            AppNavigator.navigateBasedOnRole(context, state.role);
+            AppNavigator.navigateBasedOnRole(context, state.user.role);
           } else if (state is AuthUnauthenticated) {
-            print('Unauthenticated: Navigating to login.');
-            // No explicit navigation here, as the splash screen itself is handling the initial check
-            // and the app_router's redirect will take over
+            // No-op; router redirect will handle
           } else if (state is AuthError) {
-            print('AuthError: ${state.message}');
-            UiUtils.showSnackBar(context, state.message, backgroundColor: Colors.red);
+            UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
             AppNavigator.navigateToLogin(context); // Redirect to login on error
           }
           // No action needed for AuthInitial or AuthLoading, just show indicator
@@ -52,11 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('Checking authentication status...'),
-            ],
+            children: [CircularProgressIndicator(), SizedBox(height: 20), Text('Checking authentication status...')],
           ),
         ),
       ),

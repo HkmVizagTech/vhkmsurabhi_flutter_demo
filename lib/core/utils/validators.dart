@@ -1,37 +1,47 @@
 // lib/core/utils/validators.dart
-import 'package:surabhi/core/constants/app_constants.dart';
 
 class AppValidators {
+  static final RegExp _emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+
+  static final RegExp _passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
   static String? emailValidator(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter your email';
+      return 'Email is required';
     }
-    if (!AppConstants.EMAIL_REGEX.hasMatch(value)) {
-      return 'Please enter a valid email';
+    if (!isValidEmail(value)) {
+      return 'Invalid email';
     }
     return null;
   }
 
   static String? passwordValidator(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter a password';
+      return 'Password is required';
     }
-    if(value.length < 8) {
+    if (value.length < 8) {
       return 'Password must be at least 8 characters';
     }
-    if (!AppConstants.PASSWORD_REGEX.hasMatch(value)) {
-      return 'Password must contain at least 1 letter and 1 number';
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one digit';
+    }
+    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      return 'Password must contain at least one special character';
     }
     return null;
   }
 
-  static String? confirmPasswordValidator(String? value, String password) {
-    if (value == null || value.isEmpty) {
-      return 'Please confirm your password';
-    }
-    if (value != password) {
-      return 'Passwords do not match';
-    }
-    return null;
+  static bool isValidEmail(String email) {
+    return _emailRegex.hasMatch(email);
+  }
+
+  static bool isValidPassword(String password) {
+    return _passwordRegex.hasMatch(password);
   }
 }

@@ -1,14 +1,11 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surabhi/core/constants/colors.dart';
-import 'package:surabhi/core/network/api_client.dart' as di;
-import 'package:surabhi/core/shared_preferences/preferences_service.dart' as di;
-import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart' as di;
-import 'package:surabhi/features/auth/data/repositories/auth_repository.dart' as di;
+import 'package:surabhi/core/theme/app_themes.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/routes/app_router.dart';
 import 'package:surabhi/injector.dart' as di; // di for dependency injection
+import 'package:surabhi/core/theme/theme_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,74 +18,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiRepositoryProvider(
+    return MultiBlocProvider(
       providers: [
-        // Provide core services that repositories depend on
-        RepositoryProvider(create: (_) => di.sl<di.PreferencesService>()),
-        RepositoryProvider(create: (_) => di.sl<di.ApiClient>()),
-        RepositoryProvider(create: (_) => di.sl<di.AuthRemoteDataSource>()),
-        RepositoryProvider(create: (_) => di.sl<di.AuthRepository>()),
+        BlocProvider<AuthBloc>(create: (_) => di.sl<AuthBloc>()..add(AppStarted())),
+        BlocProvider<ThemeCubit>(create: (_) => di.sl<ThemeCubit>()),
       ],
-      child: BlocProvider<AuthBloc>(
-        // Create the AuthBloc, which uses AuthRepository
-        create: (context) => di.sl<AuthBloc>(),
-        // The AppStarted event is dispatched in SplashScreen to check initial auth state
-        child: MaterialApp.router(
-          title: 'My Mobile App',
-          theme: ThemeData(
-            primaryColor: AppColors.primaryColor,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              centerTitle: false,
-              titleTextStyle: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: Colors.blue, width: 2.0),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: Colors.red, width: 1.0),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: Colors.red, width: 2.0),
-              ),
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primaryColor,
-              ),
-            ),
-          ),
-          routerConfig: appRouter,
-        ),
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp.router(
+            title: 'My Mobile App',
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: themeMode,
+            routerConfig: AppRouter(context.read<AuthBloc>()).router,
+          );
+        },
       ),
     );
   }

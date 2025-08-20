@@ -1,4 +1,5 @@
-// lib/features/auth/presentation/bloc/auth_state.dart
+// lib/features/auth/presentation/bloc/auth_state.
+
 part of 'auth_bloc.dart';
 
 abstract class AuthState extends Equatable {
@@ -8,23 +9,26 @@ abstract class AuthState extends Equatable {
   List<Object> get props => [];
 }
 
-class AuthInitial extends AuthState {} // Initial state before any action
+class AuthInitial extends AuthState {}
 
-class AuthLoading extends AuthState {} // For showing progress indicators
+class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
-  final UserModel user; // Full user details
-  final String role; // User's role for routing
+  final UserEntity user;
 
-  const AuthAuthenticated({required this.user, required this.role});
+  const AuthAuthenticated({required this.user});
 
   @override
-  List<Object> get props => [user, role];
+  List<Object> get props => [user];
 }
 
-class AuthUnauthenticated extends AuthState {} // User is not logged in
+class AuthUnauthenticated extends AuthState {
+  final String? message;
 
-class AuthRegistrationSuccess extends AuthState {} // Registration completed successfully
+  const AuthUnauthenticated({this.message});
+  @override
+  List<Object> get props => [message ?? ''];
+}
 
 class AuthError extends AuthState {
   final String message;

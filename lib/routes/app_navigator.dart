@@ -31,17 +31,22 @@ class AppNavigator {
     context.go(path);
   }
 
-  // Example of another common navigation utility: navigate to login
+  // Navigate to login
   static void navigateToLogin(BuildContext context) {
     context.go('/login');
   }
 
-  // Example of navigating to register
-  static void navigateToRegister(BuildContext context) {
-    context.go('/register');
+  // Navigate to settings
+  static void navigateToSettings(BuildContext context) {
+    context.push('/settings');
   }
 
-  // Example: navigate back if possible, or to a default path
+  // Navigate to create user (admin only)
+  static void navigateToCreateUser(BuildContext context) {
+    context.push('/admin/create-user');
+  }
+
+  // Navigate back if possible, or to a default path
   static void navigateBackOrHome(BuildContext context) {
     if (context.canPop()) {
       context.pop();
@@ -50,10 +55,28 @@ class AppNavigator {
     }
   }
 
+  // Get role-specific menu items
+  static List<String> getRoleSpecificMenuItems(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return ['User Management', 'Register User'];
+      case 'employee':
+        return ['My Tasks'];
+      case 'preacher':
+        return ['Sermons'];
+      case 'approver':
+        return ['Pending Approvals'];
+      case 'volunteer':
+        return ['Activities'];
+      default:
+        return [];
+    }
+  }
+
   // A more robust initial navigation based on BLoC state
   static void navigateOnAuthChange(BuildContext context, AuthState state) {
     if (state is AuthAuthenticated) {
-      AppNavigator.navigateBasedOnRole(context, state.role);
+      AppNavigator.navigateBasedOnRole(context, state.user.role);
     } else if (state is AuthUnauthenticated) {
       AppNavigator.navigateToLogin(context);
     }
