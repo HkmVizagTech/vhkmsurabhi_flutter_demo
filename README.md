@@ -196,7 +196,6 @@ See [LICENSE.md](LICENSE.md) for details.
 
 - [@praveenkumargurrala](https://github.com/praveenkumargurrala) - Project Lead
 - [@sudama011](https://github.com/sudama011) - Lead Developer
-- [@Sdcoder123](https://github.com/Sdcoder123) - Developer
 
 ## 📞 Support
 
