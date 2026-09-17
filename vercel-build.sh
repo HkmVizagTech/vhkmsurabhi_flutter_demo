@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+git clone --depth 1 -b stable https://github.com/flutter/flutter.git .flutter_sdk
+export PATH="$PWD/.flutter_sdk/bin:$PATH"
+
+flutter config --enable-web --no-analytics
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter build web --release
