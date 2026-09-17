@@ -116,3 +116,4 @@ firebase-debug-*.log
 *.class
 *.pyc
 *.swp
+_setup/

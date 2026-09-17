@@ -1,30 +1,79 @@
 // lib/features/approver/dashboard/presentation/pages/approver_dashboard.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
+import 'package:surabhi/core/widgets/dashboard_action_card.dart';
+import 'package:surabhi/core/widgets/dashboard_header.dart';
+import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/features/shared/donation/presentation/pages/donations_list_page.dart';
 
 class ApproverDashboard extends StatelessWidget {
   const ApproverDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const color = AppColors.approverColor;
+    final firstName = context.select<AuthBloc, String>(
+      (bloc) => bloc.state is AuthAuthenticated ? (bloc.state as AuthAuthenticated).user.firstName ?? 'Approver' : 'Approver',
+    );
+
     return AppScaffold(
       title: 'Approver Dashboard',
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.check_circle, size: 64, color: AppColors.approverColor),
-            const SizedBox(height: 16),
-            const Text('Welcome to Approver Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(
-              'Approver features coming soon...',
-              style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
-            ),
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          DashboardHeader(
+            greeting: 'Welcome back, $firstName',
+            subtitle: 'Donation receipts waiting on your review.',
+            icon: Icons.check_circle,
+            color: color,
+          ),
+          const SizedBox(height: 20),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.1,
+            children: [
+              DashboardActionCard(
+                icon: Icons.pending_actions,
+                title: 'Pending Approvals',
+                subtitle: 'Receipts to account',
+                color: color,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const DonationsListPage(
+                      title: 'Pending Approvals',
+                      color: color,
+                      statusFilter: DonationStatus.pending,
+                      showApproveAction: true,
+                    ),
+                  ),
+                ),
+              ),
+              DashboardActionCard(
+                icon: Icons.history,
+                title: 'Approval History',
+                subtitle: 'Previously accounted',
+                color: color,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const DonationsListPage(
+                      title: 'Approval History',
+                      color: color,
+                      statusFilter: DonationStatus.approved,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

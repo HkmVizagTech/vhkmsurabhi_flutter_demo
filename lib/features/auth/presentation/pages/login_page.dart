@@ -9,6 +9,7 @@ import 'package:surabhi/core/widgets/loading_indicator.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/routes/app_navigator.dart';
 import 'package:surabhi/core/utils/validators.dart';
+import 'package:surabhi/core/constants/role_constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -50,13 +51,30 @@ class _LoginPageState extends State<LoginPage> {
             UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
           }
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Container(
+                  width: 88,
+                  height: 88,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Theme.of(context).colorScheme.secondary, width: 3),
+                    image: const DecorationImage(image: AssetImage('lib/assets/logos/logo.png'), fit: BoxFit.cover),
+                  ),
+                ),
+                Text('Welcome back', style: Theme.of(context).textTheme.headlineSmall),
+                const SizedBox(height: 4),
+                Text(
+                  'Sign in to continue to Surabhi',
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                ),
+                const SizedBox(height: 28),
                 AppTextField(
                   controller: _emailController,
                   labelText: 'Email',
@@ -87,14 +105,41 @@ class _LoginPageState extends State<LoginPage> {
                   builder: (context, state) {
                     return state is AuthLoading
                         ? const AppLoadingIndicator()
-                        : ElevatedButton(
-                            onPressed: _login,
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(50), // Make button full width
+                        : SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              onPressed: _login,
+                              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                              child: const Text('Login', style: TextStyle(fontSize: 16)),
                             ),
-                            child: const Text('Login', style: TextStyle(fontSize: 18)),
                           );
                   },
+                ),
+                const SizedBox(height: 32.0),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'DEV BYPASS — no backend required',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 12.0),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  alignment: WrapAlignment.center,
+                  children: RoleConstants.roles.map((role) {
+                    return OutlinedButton(
+                      onPressed: () => BlocProvider.of<AuthBloc>(context).add(DevBypassLoginRequested(role: role)),
+                      child: Text(RoleConstants.getRoleDisplayName(role)),
+                    );
+                  }).toList(),
                 ),
               ],
             ),

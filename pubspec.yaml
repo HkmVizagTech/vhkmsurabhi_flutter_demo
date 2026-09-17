@@ -38,6 +38,7 @@ dependencies:
 
   # UI
   cupertino_icons: ^1.0.8
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:
@@ -53,8 +54,8 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
   # Code Generation
-  build_runner: ^2.7.0
-  json_serializable: ^6.10.0
+  build_runner: ^2.16.1
+  json_serializable: ^6.14.1
 
   # App Configuration
   flutter_launcher_icons: ^0.14.4
@@ -78,7 +79,7 @@ flutter:
         - asset: lib/assets/fonts/OpenSans-Regular.ttf
         - asset: lib/assets/fonts/OpenSans-Italic.ttf
           style: italic
-        - asset: lib/assets/fonts/OpenSans-Semibold.ttf
+        - asset: lib/assets/fonts/OpenSans-SemiBold.ttf
           weight: 600
     - family: Montserrat
       fonts:

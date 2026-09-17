@@ -5,6 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/features/employee/donor/presentation/pages/add_donor_page.dart';
+import 'package:surabhi/features/preacher/enrolled_donors/presentation/pages/my_enrolled_donors_page.dart';
+import 'package:surabhi/features/preacher/payment_link/presentation/pages/send_payment_link_page.dart';
+import 'package:surabhi/features/shared/donation/presentation/pages/donations_list_page.dart';
+import 'package:surabhi/features/shared/donation/presentation/pages/record_donation_page.dart';
+import 'package:surabhi/features/shared/donor/presentation/pages/donor_lookup_page.dart';
+import 'package:surabhi/features/volunteer/qr/presentation/pages/qr_scanner_page.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -197,7 +206,11 @@ class _RoleAwareDrawer extends StatelessWidget {
       leading: const Icon(Icons.dashboard),
       title: const Text('Dashboard'),
       onTap: () {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(); // close the drawer
+        // Drop any screens pushed on top of the dashboard (e.g. a "coming
+        // soon" detail page) first: otherwise context.go() to a path we're
+        // already logically on is a no-op and the pushed page stays put.
+        Navigator.of(context).popUntil((route) => route.isFirst);
         _navigateToDashboard(context, role);
       },
     );
@@ -225,56 +238,95 @@ class _RoleAwareDrawer extends StatelessWidget {
           ),
         ];
       case 'employee':
-        return [
-          ListTile(
-            leading: const Icon(Icons.task),
-            title: const Text('My Tasks'),
-            onTap: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tasks feature coming soon')));
-            },
-          ),
-        ];
+        {
+          const employeeColor = AppColors.employeeColor;
+          return [
+            _pageTile(context, Icons.person_add, 'Add Donor', const AddDonorPage()),
+            _pageTile(context, Icons.person_search, 'Donor Lookup', const DonorLookupPage(color: employeeColor)),
+            _pageTile(
+              context,
+              Icons.receipt_long,
+              'Record Donation',
+              const RecordDonationPage(title: 'Record Donation', color: employeeColor),
+            ),
+            _pageTile(
+              context,
+              Icons.bar_chart,
+              'Donations Report',
+              const DonationsListPage(title: 'Donations Report', color: employeeColor),
+            ),
+          ];
+        }
       case 'preacher':
-        return [
-          ListTile(
-            leading: const Icon(Icons.school),
-            title: const Text('Sermons'),
-            onTap: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sermons feature coming soon')));
-            },
-          ),
-        ];
+        {
+          const preacherColor = AppColors.preacherColor;
+          return [
+            _pageTile(
+              context,
+              Icons.person_add,
+              'Add Donor',
+              const AddDonorPage(title: 'Add Donor', color: preacherColor),
+            ),
+            _pageTile(context, Icons.person_search, 'Donor Lookup', const DonorLookupPage(color: preacherColor)),
+            _pageTile(
+              context,
+              Icons.volunteer_activism,
+              'Record Seva',
+              const RecordDonationPage(title: 'Record Seva', color: preacherColor),
+            ),
+            _pageTile(context, Icons.groups, 'My Enrolled Donors', const MyEnrolledDonorsPage()),
+            _pageTile(context, Icons.link, 'Send Payment Link', const SendPaymentLinkPage()),
+          ];
+        }
       case 'approver':
-        return [
-          ListTile(
-            leading: const Icon(Icons.approval),
-            title: const Text('Pending Approvals'),
-            onTap: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Approvals feature coming soon')));
-            },
-          ),
-        ];
+        {
+          const approverColor = AppColors.approverColor;
+          return [
+            _pageTile(
+              context,
+              Icons.pending_actions,
+              'Pending Approvals',
+              const DonationsListPage(
+                title: 'Pending Approvals',
+                color: approverColor,
+                statusFilter: DonationStatus.pending,
+                showApproveAction: true,
+              ),
+            ),
+            _pageTile(
+              context,
+              Icons.history,
+              'Approval History',
+              const DonationsListPage(
+                title: 'Approval History',
+                color: approverColor,
+                statusFilter: DonationStatus.approved,
+              ),
+            ),
+          ];
+        }
       case 'volunteer':
-        return [
-          ListTile(
-            leading: const Icon(Icons.volunteer_activism),
-            title: const Text('Activities'),
-            onTap: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Activities feature coming soon')));
-            },
-          ),
-        ];
+        {
+          const volunteerColor = AppColors.volunteerColor;
+          return [
+            _pageTile(context, Icons.person_search, 'Donor Lookup', const DonorLookupPage(color: volunteerColor)),
+            _pageTile(context, Icons.qr_code_scanner, 'QR Code Scanner', const QrScannerPage()),
+          ];
+        }
       default:
         return [];
     }
+  }
+
+  ListTile _pageTile(BuildContext context, IconData icon, String label, Widget page) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(label),
+      onTap: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+      },
+    );
   }
 
   List<Widget> _buildCommonTiles(BuildContext context) {

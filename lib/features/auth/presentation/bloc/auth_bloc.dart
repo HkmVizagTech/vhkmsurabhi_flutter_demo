@@ -16,6 +16,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginRequested>(_onLoginRequested);
     on<AppStarted>(_onAppStarted);
     on<LogoutRequested>(_onLogoutRequested);
+    on<DevBypassLoginRequested>(_onDevBypassLoginRequested);
   }
 
   Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
@@ -36,5 +37,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
     await authRepository.logout();
     emit(const AuthUnauthenticated());
+  }
+
+  Future<void> _onDevBypassLoginRequested(DevBypassLoginRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    emit(
+      AuthAuthenticated(
+        user: UserEntity(
+          userId: 'dev-${event.role}',
+          email: '${event.role}@dev.local',
+          role: event.role,
+          is2faEnabled: false,
+          firstName: 'Dev',
+          lastName: event.role,
+        ),
+      ),
+    );
   }
 }

@@ -16,29 +16,9 @@ class RoleBasedAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Row(
-        children: [
-          // Constant Icon
-          const Padding(
-            padding: EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.apps, color: Colors.white), // Your common app icon
-          ),
-          // Constant App Name
-          Text(
-            titleText, // This can also be a constant like 'My App'
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor, // Use theme color
-      foregroundColor: Theme.of(context).appBarTheme.foregroundColor, // Use theme color
-      elevation: Theme.of(context).appBarTheme.elevation, // Use theme elevation
-      // Optional: Custom leading widget if needed, otherwise default back button
+      title: Text(titleText, style: Theme.of(context).appBarTheme.titleTextStyle),
       leading: onLeadingPressed != null
-          ? IconButton(
-              icon: const Icon(Icons.menu), // Example: a menu icon for a drawer
-              onPressed: onLeadingPressed,
-            )
+          ? IconButton(icon: const Icon(Icons.menu_rounded), onPressed: onLeadingPressed)
           : null, // Let AppBar decide if it should show back button
       actions: actions, // Dynamically populated actions
     );

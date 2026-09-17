@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Common colors
-  static const Color primaryColor = Color(0xFF4A148C);
-  static const Color secondaryColor = Color(0xFF673AB7);
-  static const Color accentColor = Color(0xFFFFC107);
+  // Common colors - matched to harekrishnavizag.org / DCC's navy + gold brand
+  static const Color primaryColor = Color(0xFF13224A); // Navy
+  static const Color secondaryColor = Color(0xFFC99A3D); // Gold
+  static const Color accentColor = Color(0xFFE5BD6E); // Light gold accent
   static const Color onPrimary = Colors.white;
   static const Color onSecondary = Colors.white;
   static const Color onAccent = Colors.black;
@@ -35,8 +35,8 @@ class AppColors {
   static const Color lightSurface = Colors.white;
   static const Color lightOnSurface = Colors.black87;
   static const Color lightBorderColor = Color(0xFFBDBDBD); // grey[400]
-  static const Color lightFocusBorder = Colors.blue;
-  static const Color lightButton = Colors.blue;
+  static const Color lightFocusBorder = Color(0xFFC99A3D); // Gold
+  static const Color lightButton = Color(0xFF13224A); // Navy
   static const Color lightOnButton = Colors.white;
   static const Color lightTextColor = Color(0xFF333333);
 
@@ -46,8 +46,8 @@ class AppColors {
   static const Color darkSurface = Color(0xFF1E1E1E);
   static const Color darkOnSurface = Colors.white70;
   static const Color darkBorderColor = Color(0xFF424242); // grey[800]
-  static const Color darkFocusBorder = Color(0xFF64B5F6); // lightBlue
-  static const Color darkButton = Color(0xFF64B5F6);
+  static const Color darkFocusBorder = Color(0xFFE5BD6E); // Light gold
+  static const Color darkButton = Color(0xFFC99A3D); // Gold
   static const Color darkOnButton = Colors.black;
   static const Color darkTextColor = Colors.white;
 
