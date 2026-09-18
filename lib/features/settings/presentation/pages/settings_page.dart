@@ -23,11 +23,6 @@ class SettingsPage extends StatelessWidget {
             value: isDark,
             onChanged: (val) => context.read<ThemeCubit>().toggleTheme(val),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () => context.read<ThemeCubit>().setSystemTheme(),
-            child: const Text('Use System Theme'),
-          ),
         ],
       ),
     );

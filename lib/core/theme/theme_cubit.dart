@@ -5,18 +5,18 @@ import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 class ThemeCubit extends Cubit<ThemeMode> {
   final PreferencesService _preferencesService;
 
-  ThemeCubit(this._preferencesService) : super(ThemeMode.system) {
+  ThemeCubit(this._preferencesService) : super(ThemeMode.light) {
     _loadTheme();
   }
 
   Future<void> _loadTheme() async {
     final savedTheme = await _preferencesService.getThemeMode();
-    if (savedTheme == 'light') {
-      emit(ThemeMode.light);
-    } else if (savedTheme == 'dark') {
+    if (savedTheme == 'dark') {
       emit(ThemeMode.dark);
     } else {
-      emit(ThemeMode.system);
+      // Default is always light — the DCC brand theme (navy/gold) has no
+      // dark mode, so we don't follow ThemeMode.system here.
+      emit(ThemeMode.light);
     }
   }
 
@@ -24,10 +24,5 @@ class ThemeCubit extends Cubit<ThemeMode> {
     final newTheme = isDark ? ThemeMode.dark : ThemeMode.light;
     await _preferencesService.saveThemeMode(newTheme.name);
     emit(newTheme);
-  }
-
-  void setSystemTheme() async {
-    await _preferencesService.saveThemeMode(ThemeMode.system.name);
-    emit(ThemeMode.system);
   }
 }
