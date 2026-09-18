@@ -19,19 +19,49 @@ class RecordDonationPage extends StatefulWidget {
 class _RecordDonationPageState extends State<RecordDonationPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _referenceNumberController = TextEditingController();
 
   MockDonor? _selectedDonor;
   String _trust = MockData.trusts.first;
   String _sevaCategory = MockData.sevaCategories.first;
+  late SevaSubCategory _sevaSubCategory = MockData.subCategoriesFor(_sevaCategory).first;
   String _modeOfPayment = MockData.modesOfPayment.first;
 
   bool _submitted = false;
   String? _receiptNumber;
 
   @override
+  void initState() {
+    super.initState();
+    if (_sevaSubCategory.amount != null) {
+      _amountController.text = _sevaSubCategory.amount.toString();
+    }
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
+    _referenceNumberController.dispose();
     super.dispose();
+  }
+
+  void _onCategoryChanged(String category) {
+    setState(() {
+      _sevaCategory = category;
+      _sevaSubCategory = MockData.subCategoriesFor(category).first;
+      if (_sevaSubCategory.amount != null) {
+        _amountController.text = _sevaSubCategory.amount.toString();
+      }
+    });
+  }
+
+  void _onSubCategoryChanged(SevaSubCategory subCategory) {
+    setState(() {
+      _sevaSubCategory = subCategory;
+      if (subCategory.amount != null) {
+        _amountController.text = subCategory.amount.toString();
+      }
+    });
   }
 
   void _submit() {
@@ -82,7 +112,16 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
             initialValue: _sevaCategory,
             decoration: const InputDecoration(labelText: 'Seva Category *', prefixIcon: Icon(Icons.volunteer_activism)),
             items: MockData.sevaCategories.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-            onChanged: (v) => setState(() => _sevaCategory = v ?? _sevaCategory),
+            onChanged: (v) => _onCategoryChanged(v ?? _sevaCategory),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<SevaSubCategory>(
+            initialValue: _sevaSubCategory,
+            decoration: const InputDecoration(labelText: 'Seva Sub Category *', prefixIcon: Icon(Icons.category_outlined)),
+            items: MockData.subCategoriesFor(_sevaCategory)
+                .map((s) => DropdownMenuItem(value: s, child: Text(s.amount != null ? '${s.name} (₹${s.amount})' : s.name)))
+                .toList(),
+            onChanged: (v) => _onSubCategoryChanged(v ?? _sevaSubCategory),
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -103,6 +142,22 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
             items: MockData.modesOfPayment.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
             onChanged: (v) => setState(() => _modeOfPayment = v ?? _modeOfPayment),
           ),
+          if (_modeOfPayment == 'Online') ...[
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _referenceNumberController,
+              decoration: const InputDecoration(
+                labelText: 'UTR / Transaction Reference Number *',
+                helperText: 'Used to verify this payment against the bank statement',
+                prefixIcon: Icon(Icons.confirmation_number_outlined),
+              ),
+              validator: (v) {
+                if (_modeOfPayment != 'Online') return null;
+                if (v == null || v.trim().isEmpty) return 'Reference number is required for online payments';
+                return null;
+              },
+            ),
+          ],
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _submit,
@@ -121,25 +176,10 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
       isScrollControlled: true,
       builder: (context) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.7,
+          initialChildSize: 0.85,
           expand: false,
           builder: (context, scrollController) {
-            return ListView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(16),
-              children: [
-                const Text('Select Donor', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                ...MockData.donors.map(
-                  (d) => ListTile(
-                    leading: CircleAvatar(child: Text(d.name[0])),
-                    title: Text(d.name),
-                    subtitle: Text('${d.id} · ${d.mobile}'),
-                    onTap: () => Navigator.of(context).pop(d),
-                  ),
-                ),
-              ],
-            );
+            return _DonorPickerSheet(scrollController: scrollController);
           },
         );
       },
@@ -158,11 +198,82 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         Text('Receipt No: $_receiptNumber', style: TextStyle(color: widget.color, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         Text('₹${_amountController.text} from ${_selectedDonor?.name ?? ''}'),
+        const SizedBox(height: 4),
+        Text('$_sevaCategory · ${_sevaSubCategory.name} · $_modeOfPayment', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+        if (_modeOfPayment == 'Online' && _referenceNumberController.text.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text('Ref: ${_referenceNumberController.text}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+        ],
         const SizedBox(height: 24),
         OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.download), label: const Text('Download Receipt (demo)')),
         const SizedBox(height: 12),
         ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Done')),
       ],
+    );
+  }
+}
+
+class _DonorPickerSheet extends StatefulWidget {
+  final ScrollController scrollController;
+
+  const _DonorPickerSheet({required this.scrollController});
+
+  @override
+  State<_DonorPickerSheet> createState() => _DonorPickerSheetState();
+}
+
+class _DonorPickerSheetState extends State<_DonorPickerSheet> {
+  final _searchController = TextEditingController();
+  List<MockDonor> _results = MockData.donors;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() => _results = MockData.searchDonors(query));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Select Donor', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _searchController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Search by name, mobile or Donor ID',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: _onSearchChanged,
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: _results.isEmpty
+                ? const Center(child: Text('No donors found'))
+                : ListView.builder(
+                    controller: widget.scrollController,
+                    itemCount: _results.length,
+                    itemBuilder: (context, index) {
+                      final d = _results[index];
+                      return ListTile(
+                        leading: CircleAvatar(child: Text(d.name[0])),
+                        title: Text(d.name),
+                        subtitle: Text('${d.id} · ${d.mobile} · ${d.city}'),
+                        onTap: () => Navigator.of(context).pop(d),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

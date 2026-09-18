@@ -64,6 +64,15 @@ class MockDonation {
   }
 }
 
+class SevaSubCategory {
+  final String category; // parent SevaCategory name
+  final String name;
+  final String code;
+  final int? amount; // fixed seva amount, if any (null = donor enters amount)
+
+  const SevaSubCategory({required this.category, required this.name, required this.code, this.amount});
+}
+
 class MockData {
   MockData._();
 
@@ -75,7 +84,28 @@ class MockData {
     'Nitya Sevas',
     'Temple Construction',
   ];
-  static const List<String> modesOfPayment = ['Cash', 'Card', 'Online', 'Cheque/DD'];
+
+  // Grounded in DCC's SevaSubCategory table (CategoryId -> SevaCategory).
+  static const List<SevaSubCategory> sevaSubCategories = [
+    SevaSubCategory(category: 'Annadanam', name: 'Daily Annadanam', code: 'ANN01', amount: 501),
+    SevaSubCategory(category: 'Annadanam', name: 'Festival Annadanam', code: 'ANN02', amount: 2501),
+    SevaSubCategory(category: 'Annadanam', name: 'Sponsor a Week', code: 'ANN03', amount: 5001),
+    SevaSubCategory(category: 'General Donation', name: 'Temple General Fund', code: 'GEN01'),
+    SevaSubCategory(category: 'General Donation', name: 'Deity Seva', code: 'GEN02', amount: 1001),
+    SevaSubCategory(category: 'Festival Donations', name: 'Janmashtami', code: 'FES01'),
+    SevaSubCategory(category: 'Festival Donations', name: 'Rathayatra', code: 'FES02'),
+    SevaSubCategory(category: 'Festival Donations', name: 'Gaura Purnima', code: 'FES03'),
+    SevaSubCategory(category: 'Nitya Sevas', name: 'Tulasi Seva', code: 'NIT01', amount: 251),
+    SevaSubCategory(category: 'Nitya Sevas', name: 'Guru Puja Sponsorship', code: 'NIT02', amount: 501),
+    SevaSubCategory(category: 'Temple Construction', name: 'Brick Donation', code: 'CON01', amount: 1116),
+    SevaSubCategory(category: 'Temple Construction', name: 'Pillar Sponsorship', code: 'CON02', amount: 100001),
+  ];
+
+  static List<SevaSubCategory> subCategoriesFor(String category) =>
+      sevaSubCategories.where((s) => s.category == category).toList();
+
+  // Grounded in DCC's ModeOfPayment lookup table (exact spelling: "Cheque/DD").
+  static const List<String> modesOfPayment = ['Cash', 'Card', 'Online', 'Cheque/DD', 'Others'];
 
   static final List<MockDonor> donors = [
     const MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com'),
