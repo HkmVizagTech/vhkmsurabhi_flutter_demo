@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/dashboard_action_card.dart';
@@ -97,19 +98,20 @@ class PreacherDashboard extends StatelessWidget {
               ),
               DashboardActionCard(
                 icon: Icons.person_search,
-                title: 'Donor Lookup',
-                subtitle: 'Search donor records',
-                color: color,
-                onTap: () =>
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DonorLookupPage(color: color))),
-              ),
-              DashboardActionCard(
-                icon: Icons.volunteer_activism,
-                title: 'Record Seva',
-                subtitle: 'Add a donation for your donor',
+                title: 'Search Donor',
+                subtitle: 'Your enrolled donors only',
                 color: color,
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Record Seva', color: color)),
+                  MaterialPageRoute(builder: (_) => const DonorLookupPage(color: color, enrolledByFilter: kCurrentPreacherCode)),
+                ),
+              ),
+              DashboardActionCard(
+                icon: Icons.receipt_long,
+                title: 'Make Receipt',
+                subtitle: 'Record a seva & generate receipt',
+                color: color,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Make Receipt', color: color)),
                 ),
               ),
               DashboardActionCard(

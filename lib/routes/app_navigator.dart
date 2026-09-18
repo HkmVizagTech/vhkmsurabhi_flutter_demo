@@ -61,13 +61,13 @@ class AppNavigator {
       case 'admin':
         return ['User Management', 'Register User'];
       case 'employee':
-        return ['Add Donor', 'Donor Lookup', 'Record Donation', 'Donations Report'];
+        return ['Add Donor', 'Search Donor', 'Record Donation', 'Donations Report'];
       case 'preacher':
-        return ['Add Donor', 'Donor Lookup', 'Record Seva', 'My Enrolled Donors', 'Send Payment Link'];
+        return ['Add Donor', 'Search Donor', 'Make Receipt', 'My Enrolled Donors', 'Send Payment Link'];
       case 'approver':
         return ['Pending Approvals', 'Approval History'];
       case 'volunteer':
-        return ['Donor Lookup', 'QR Code Scanner'];
+        return ['Search Donor', 'QR Code Scanner'];
       default:
         return [];
     }

@@ -8,6 +8,12 @@
 
 enum DonationStatus { pending, approved, cancelled }
 
+// Demo stand-in for "the logged-in preacher's devotee code". DCC ties a
+// donor to a preacher via Donor.EnrolledBy; since the dev-bypass user has
+// no real devotee identity, every preacher-scoped screen filters on this
+// same code so a preacher only ever sees donors/donations they enrolled.
+const String kCurrentPreacherCode = 'ABRD';
+
 class MockDonor {
   final String id;
   final String name;
@@ -17,6 +23,7 @@ class MockDonor {
   final String enrolledByCode;
   final String? address;
   final String? pan;
+  final bool isPatron;
 
   const MockDonor({
     required this.id,
@@ -27,6 +34,7 @@ class MockDonor {
     this.email,
     this.address,
     this.pan,
+    this.isPatron = false,
   });
 }
 
@@ -179,12 +187,12 @@ class MockData {
   static const List<String> modesOfPayment = ['Cash', 'Card', 'Online', 'Cheque/DD', 'Others'];
 
   static final List<MockDonor> donors = [
-    const MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com', address: '12-3-45, Dwaraka Nagar, Visakhapatnam', pan: 'ABCDE1234F'),
+    const MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com', address: '12-3-45, Dwaraka Nagar, Visakhapatnam', pan: 'ABCDE1234F', isPatron: true),
     const MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com', address: '4-6-12, Governorpet, Vijayawada'),
     const MockDonor(id: 'D1026', name: 'Suresh Babu Kotturi', mobile: '9866123003', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '9-1-23, MVP Colony, Visakhapatnam'),
-    const MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com', address: '3-2-8, Brodipet, Guntur', pan: 'BXYPR5678K'),
+    const MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com', address: '3-2-8, Brodipet, Guntur', pan: 'BXYPR5678K', isPatron: true),
     const MockDonor(id: 'D1028', name: 'Krishna Murthy Yalamanchili', mobile: '9866123005', city: 'Rajahmundry', enrolledByCode: 'JTMD', address: '7-11-2, Danavaipeta, Rajahmundry'),
-    const MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com', address: '15-8-9, Seethammadhara, Visakhapatnam'),
+    const MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com', address: '15-8-9, Seethammadhara, Visakhapatnam', isPatron: true),
     const MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD', address: '2-4-19, Suryaraopeta, Kakinada'),
     const MockDonor(id: 'D1031', name: 'Sita Mahalakshmi Nallamothu', mobile: '9866123008', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '11-2-6, Pedagantyada, Visakhapatnam'),
   ];
@@ -230,6 +238,12 @@ class MockData {
 
   static List<MockDonation> donationsForDonor(String donorId) {
     return donations.where((d) => d.donorId == donorId).toList();
+  }
+
+  /// Donors enrolled by a given devotee code (DCC's Donor.EnrolledBy),
+  /// optionally narrowed to just their patrons.
+  static List<MockDonor> donorsFor(String enrolledByCode, {bool patronsOnly = false}) {
+    return donors.where((d) => d.enrolledByCode == enrolledByCode && (!patronsOnly || d.isPatron)).toList();
   }
 
   static List<MockDonor> searchDonors(String query) {

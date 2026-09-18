@@ -14,8 +14,9 @@ import 'package:surabhi/features/shared/donation/data/receipt_pdf_builder.dart';
 
 class ReceiptPage extends StatelessWidget {
   final Receipt receipt;
+  final Color color;
 
-  const ReceiptPage({super.key, required this.receipt});
+  const ReceiptPage({super.key, required this.receipt, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +29,12 @@ class ReceiptPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Theme.of(context).dividerColor),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 4))],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -41,8 +43,11 @@ class ReceiptPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   if (profile != null) _header(profile),
                   const Divider(height: 32),
-                  const Center(
-                    child: Text('DONATION RECEIPT', style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                  Center(
+                    child: Text(
+                      'DONATION RECEIPT',
+                      style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.underline, color: color),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   _kv('DR No.', receipt.receiptNumber, bold: true),
@@ -108,8 +113,9 @@ class ReceiptPage extends StatelessWidget {
                 final bytes = await buildReceiptPdf(receipt);
                 await Printing.sharePdf(bytes: bytes, filename: '${receipt.receiptNumber}.pdf');
               },
-              icon: const Icon(Icons.download),
-              label: const Text('Download / Share PDF'),
+              style: ElevatedButton.styleFrom(backgroundColor: color, minimumSize: const Size.fromHeight(50)),
+              icon: const Icon(Icons.download, color: Colors.white),
+              label: const Text('Download / Share PDF', style: TextStyle(color: Colors.white)),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
@@ -136,7 +142,13 @@ class ReceiptPage extends StatelessWidget {
       text = 'DONATION Acknowledgement';
       color = const Color(0xFF808080);
     }
-    return Center(child: Text(text, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)));
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+        child: Text(text, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold)),
+      ),
+    );
   }
 
   Widget _header(TrustProfile profile) {

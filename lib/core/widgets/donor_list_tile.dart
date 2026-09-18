@@ -20,7 +20,19 @@ class DonorListTile extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.15),
           child: Text(donor.name[0], style: TextStyle(color: color, fontWeight: FontWeight.bold)),
         ),
-        title: Text(donor.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            Flexible(child: Text(donor.name, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+            if (donor.isPatron) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(4)),
+                child: const Text('PATRON', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ],
+          ],
+        ),
         subtitle: Text('${donor.id} · ${donor.mobile} · ${donor.city}'),
         trailing: const Icon(Icons.chevron_right_rounded),
         onTap: onTap,

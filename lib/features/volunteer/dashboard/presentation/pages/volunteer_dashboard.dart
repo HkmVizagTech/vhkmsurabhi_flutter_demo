@@ -42,7 +42,7 @@ class VolunteerDashboard extends StatelessWidget {
             children: [
               DashboardActionCard(
                 icon: Icons.person_search,
-                title: 'Donor Lookup',
+                title: 'Search Donor',
                 subtitle: 'Search donor records',
                 color: color,
                 onTap: () => Navigator.of(

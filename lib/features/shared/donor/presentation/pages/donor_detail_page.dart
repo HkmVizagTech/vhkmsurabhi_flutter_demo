@@ -38,7 +38,19 @@ class DonorDetailPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(donor.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Row(
+                              children: [
+                                Flexible(child: Text(donor.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                                if (donor.isPatron) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(6)),
+                                    child: const Text('PATRON', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  ),
+                                ],
+                              ],
+                            ),
                             Text(donor.id, style: TextStyle(color: color)),
                           ],
                         ),
@@ -48,7 +60,9 @@ class DonorDetailPage extends StatelessWidget {
                   const Divider(height: 28),
                   _infoRow(Icons.phone, donor.mobile),
                   if (donor.email != null) _infoRow(Icons.email, donor.email!),
+                  if (donor.address != null) _infoRow(Icons.home_outlined, donor.address!),
                   _infoRow(Icons.location_city, donor.city),
+                  if (donor.pan != null) _infoRow(Icons.badge_outlined, 'PAN: ${donor.pan}'),
                   _infoRow(Icons.person_pin, 'Enrolled by ${donor.enrolledByCode}'),
                   const Divider(height: 28),
                   Row(

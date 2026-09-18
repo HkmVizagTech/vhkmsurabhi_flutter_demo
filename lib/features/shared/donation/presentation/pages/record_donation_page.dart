@@ -256,7 +256,7 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         Text(receipt.sevaName, style: const TextStyle(fontSize: 13, color: Colors.grey)),
         const SizedBox(height: 24),
         ElevatedButton.icon(
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReceiptPage(receipt: receipt))),
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReceiptPage(receipt: receipt, color: widget.color))),
           style: ElevatedButton.styleFrom(backgroundColor: widget.color, minimumSize: const Size.fromHeight(50)),
           icon: const Icon(Icons.receipt_long, color: Colors.white),
           label: const Text('View Receipt', style: TextStyle(color: Colors.white)),

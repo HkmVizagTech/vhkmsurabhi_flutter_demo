@@ -242,7 +242,7 @@ class _RoleAwareDrawer extends StatelessWidget {
           const employeeColor = AppColors.employeeColor;
           return [
             _pageTile(context, Icons.person_add, 'Add Donor', const AddDonorPage()),
-            _pageTile(context, Icons.person_search, 'Donor Lookup', const DonorLookupPage(color: employeeColor)),
+            _pageTile(context, Icons.person_search, 'Search Donor', const DonorLookupPage(color: employeeColor)),
             _pageTile(
               context,
               Icons.receipt_long,
@@ -267,12 +267,17 @@ class _RoleAwareDrawer extends StatelessWidget {
               'Add Donor',
               const AddDonorPage(title: 'Add Donor', color: preacherColor),
             ),
-            _pageTile(context, Icons.person_search, 'Donor Lookup', const DonorLookupPage(color: preacherColor)),
             _pageTile(
               context,
-              Icons.volunteer_activism,
-              'Record Seva',
-              const RecordDonationPage(title: 'Record Seva', color: preacherColor),
+              Icons.person_search,
+              'Search Donor',
+              const DonorLookupPage(color: preacherColor, enrolledByFilter: kCurrentPreacherCode),
+            ),
+            _pageTile(
+              context,
+              Icons.receipt_long,
+              'Make Receipt',
+              const RecordDonationPage(title: 'Make Receipt', color: preacherColor),
             ),
             _pageTile(context, Icons.groups, 'My Enrolled Donors', const MyEnrolledDonorsPage()),
             _pageTile(context, Icons.link, 'Send Payment Link', const SendPaymentLinkPage()),
@@ -309,7 +314,7 @@ class _RoleAwareDrawer extends StatelessWidget {
         {
           const volunteerColor = AppColors.volunteerColor;
           return [
-            _pageTile(context, Icons.person_search, 'Donor Lookup', const DonorLookupPage(color: volunteerColor)),
+            _pageTile(context, Icons.person_search, 'Search Donor', const DonorLookupPage(color: volunteerColor)),
             _pageTile(context, Icons.qr_code_scanner, 'QR Code Scanner', const QrScannerPage()),
           ];
         }
