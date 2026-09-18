@@ -218,13 +218,13 @@ class _AddDonorPageState extends State<AddDonorPage> {
           const SizedBox(height: 16),
           if (_isPreacher)
             InputDecorator(
-              decoration: const InputDecoration(labelText: 'Enrolled By *', prefixIcon: Icon(Icons.church_outlined)),
+              decoration: const InputDecoration(labelText: 'Enrolled By *', prefixIcon: Icon(Icons.person)),
               child: Text(kCurrentPreacherCode),
             )
           else
             DropdownButtonFormField<String>(
               initialValue: _enrolledByCode,
-              decoration: const InputDecoration(labelText: 'Enrolled By *', prefixIcon: Icon(Icons.church_outlined)),
+              decoration: const InputDecoration(labelText: 'Enrolled By *', prefixIcon: Icon(Icons.person)),
               items: const ['ABRD', 'JTMD', 'SRND', 'SYMD']
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),

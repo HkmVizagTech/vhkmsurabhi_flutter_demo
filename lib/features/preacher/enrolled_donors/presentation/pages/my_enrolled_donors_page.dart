@@ -31,22 +31,20 @@ class _MyEnrolledDonorsPageState extends State<MyEnrolledDonorsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${allMine.length} donor(s) enrolled by you · $patronCount patron(s)',
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ),
-              FilterChip(
-                label: const Text('Patrons only'),
-                selected: _patronsOnly,
-                onSelected: (v) => setState(() => _patronsOnly = v),
-              ),
-            ],
+          Text(
+            '${allMine.length} donor(s) enrolled by you · $patronCount patron(s)',
+            style: const TextStyle(color: Colors.grey, fontSize: 13),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Show Patrons only'),
+            secondary: Icon(Icons.workspace_premium, color: _color),
+            value: _patronsOnly,
+            activeThumbColor: _color,
+            onChanged: (v) => setState(() => _patronsOnly = v),
+          ),
+          const SizedBox(height: 8),
           if (myDonors.isEmpty) const Text('No donors match this filter.'),
           ...myDonors.map(
             (d) => DonorListTile(

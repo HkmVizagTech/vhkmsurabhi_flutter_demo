@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/dashboard_action_card.dart';
 import 'package:surabhi/core/widgets/dashboard_header.dart';
@@ -24,6 +25,22 @@ class EmployeeDashboard extends StatelessWidget {
 
     return AppScaffold(
       title: 'Employee Dashboard',
+      bottomNavItems: [
+        const AppBottomNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard'),
+        AppBottomNavItem(
+          icon: Icons.person_add,
+          label: 'Add Donor',
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddDonorPage())),
+        ),
+        AppBottomNavItem(
+          icon: Icons.receipt_long,
+          label: 'Record Donation',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Record Donation', color: color)),
+          ),
+        ),
+        const AppBottomNavItem.more(),
+      ],
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [

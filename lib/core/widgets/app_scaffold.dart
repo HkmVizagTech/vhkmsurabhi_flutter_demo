@@ -1,5 +1,6 @@
 // lib/core/widgets/app_scaffold.dart
 import 'package:flutter/material.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/role_based_app_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,8 +21,21 @@ class AppScaffold extends StatelessWidget {
   final String title;
   final List<Widget>? actions;
   final VoidCallback? onLeadingPressed;
+  // Optional bottom nav (dashboards only) - mirrors harekrishnavizag.org's
+  // mobile pattern: a few important destinations plus a "More" that opens
+  // the full drawer menu instead of navigating.
+  final List<AppBottomNavItem>? bottomNavItems;
+  final int bottomNavIndex;
 
-  const AppScaffold({super.key, required this.body, required this.title, this.actions, this.onLeadingPressed});
+  const AppScaffold({
+    super.key,
+    required this.body,
+    required this.title,
+    this.actions,
+    this.onLeadingPressed,
+    this.bottomNavItems,
+    this.bottomNavIndex = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +55,25 @@ class AppScaffold extends StatelessWidget {
       ),
       drawer: Drawer(child: _RoleAwareDrawer()),
       body: body,
+      bottomNavigationBar: bottomNavItems == null
+          ? null
+          : Builder(
+              builder: (scaffoldContext) => BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                currentIndex: bottomNavIndex,
+                onTap: (i) {
+                  final item = bottomNavItems![i];
+                  if (item.isMore) {
+                    Scaffold.of(scaffoldContext).openDrawer();
+                  } else {
+                    item.onTap?.call();
+                  }
+                },
+                items: bottomNavItems!
+                    .map((item) => BottomNavigationBarItem(icon: Icon(item.icon), label: item.label))
+                    .toList(),
+              ),
+            ),
     );
   }
 }

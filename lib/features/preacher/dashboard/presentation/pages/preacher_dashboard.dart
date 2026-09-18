@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/dashboard_action_card.dart';
 import 'package:surabhi/core/widgets/dashboard_header.dart';
@@ -32,6 +33,24 @@ class PreacherDashboard extends StatelessWidget {
 
     return AppScaffold(
       title: 'Preacher Dashboard',
+      bottomNavItems: [
+        const AppBottomNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard'),
+        AppBottomNavItem(
+          icon: Icons.receipt_long,
+          label: 'Make Receipt',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Make Receipt', color: color)),
+          ),
+        ),
+        AppBottomNavItem(
+          icon: Icons.person_search,
+          label: 'Search Donor',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const DonorLookupPage(color: color, enrolledByFilter: kCurrentPreacherCode)),
+          ),
+        ),
+        const AppBottomNavItem.more(),
+      ],
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
