@@ -19,6 +19,44 @@ import 'package:surabhi/features/preacher/stats/presentation/widgets/monthly_tre
 import 'package:surabhi/features/preacher/stats/presentation/widgets/stat_tile.dart';
 import 'package:surabhi/features/preacher/stats/presentation/widgets/trust_wise_chart.dart';
 
+List<AppBottomNavItem> _preacherBottomNav(BuildContext context, int current) {
+  const color = PreacherDashboard.color;
+  return [
+    AppBottomNavItem(
+      icon: Icons.dashboard_rounded,
+      label: 'Dashboard',
+      onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+    ),
+    AppBottomNavItem(
+      icon: Icons.receipt_long,
+      label: 'Make Receipt',
+      onTap: () => navigateToBottomNavTab(
+        context,
+        RecordDonationPage(
+          title: 'Make Receipt',
+          color: color,
+          bottomNavItems: _preacherBottomNav(context, 1),
+          bottomNavIndex: 1,
+        ),
+      ),
+    ),
+    AppBottomNavItem(
+      icon: Icons.person_search,
+      label: 'Search Donor',
+      onTap: () => navigateToBottomNavTab(
+        context,
+        DonorLookupPage(
+          color: color,
+          enrolledByFilter: kCurrentPreacherCode,
+          bottomNavItems: _preacherBottomNav(context, 2),
+          bottomNavIndex: 2,
+        ),
+      ),
+    ),
+    const AppBottomNavItem.more(),
+  ];
+}
+
 class PreacherDashboard extends StatelessWidget {
   const PreacherDashboard({super.key});
 
@@ -33,24 +71,7 @@ class PreacherDashboard extends StatelessWidget {
 
     return AppScaffold(
       title: 'Preacher Dashboard',
-      bottomNavItems: [
-        const AppBottomNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard'),
-        AppBottomNavItem(
-          icon: Icons.receipt_long,
-          label: 'Make Receipt',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Make Receipt', color: color)),
-          ),
-        ),
-        AppBottomNavItem(
-          icon: Icons.person_search,
-          label: 'Search Donor',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const DonorLookupPage(color: color, enrolledByFilter: kCurrentPreacherCode)),
-          ),
-        ),
-        const AppBottomNavItem.more(),
-      ],
+      bottomNavItems: _preacherBottomNav(context, 0),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -120,8 +141,14 @@ class PreacherDashboard extends StatelessWidget {
                 title: 'Search Donor',
                 subtitle: 'Your enrolled donors only',
                 color: color,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const DonorLookupPage(color: color, enrolledByFilter: kCurrentPreacherCode)),
+                onTap: () => navigateToBottomNavTab(
+                  context,
+                  DonorLookupPage(
+                    color: color,
+                    enrolledByFilter: kCurrentPreacherCode,
+                    bottomNavItems: _preacherBottomNav(context, 2),
+                    bottomNavIndex: 2,
+                  ),
                 ),
               ),
               DashboardActionCard(
@@ -129,8 +156,14 @@ class PreacherDashboard extends StatelessWidget {
                 title: 'Make Receipt',
                 subtitle: 'Record a seva & generate receipt',
                 color: color,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Make Receipt', color: color)),
+                onTap: () => navigateToBottomNavTab(
+                  context,
+                  RecordDonationPage(
+                    title: 'Make Receipt',
+                    color: color,
+                    bottomNavItems: _preacherBottomNav(context, 1),
+                    bottomNavIndex: 1,
+                  ),
                 ),
               ),
               DashboardActionCard(

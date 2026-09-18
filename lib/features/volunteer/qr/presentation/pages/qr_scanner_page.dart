@@ -9,11 +9,15 @@
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/features/shared/donor/presentation/pages/donor_detail_page.dart';
 
 class QrScannerPage extends StatefulWidget {
-  const QrScannerPage({super.key});
+  final List<AppBottomNavItem>? bottomNavItems;
+  final int bottomNavIndex;
+
+  const QrScannerPage({super.key, this.bottomNavItems, this.bottomNavIndex = 0});
 
   static const _color = AppColors.volunteerColor;
 
@@ -52,6 +56,8 @@ class _QrScannerPageState extends State<QrScannerPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'QR Code Scanner',
+      bottomNavItems: widget.bottomNavItems,
+      bottomNavIndex: widget.bottomNavIndex,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

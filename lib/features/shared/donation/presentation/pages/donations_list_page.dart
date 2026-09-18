@@ -1,6 +1,7 @@
 // lib/features/shared/donation/presentation/pages/donations_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/donation_list_tile.dart';
 
@@ -12,6 +13,8 @@ class DonationsListPage extends StatefulWidget {
   final Color color;
   final DonationStatus? statusFilter;
   final bool showApproveAction;
+  final List<AppBottomNavItem>? bottomNavItems;
+  final int bottomNavIndex;
 
   const DonationsListPage({
     super.key,
@@ -19,6 +22,8 @@ class DonationsListPage extends StatefulWidget {
     required this.color,
     this.statusFilter,
     this.showApproveAction = false,
+    this.bottomNavItems,
+    this.bottomNavIndex = 0,
   });
 
   @override
@@ -50,6 +55,8 @@ class _DonationsListPageState extends State<DonationsListPage> {
 
     return AppScaffold(
       title: widget.title,
+      bottomNavItems: widget.bottomNavItems,
+      bottomNavIndex: widget.bottomNavIndex,
       body: Column(
         children: [
           Container(

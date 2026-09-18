@@ -10,17 +10,18 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Home',
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, authState) {
-          if (authState is AuthAuthenticated) {
-            return _buildAuthenticatedHome(context, authState.user);
-          } else {
-            return _buildUnauthenticatedHome(context);
-          }
-        },
-      ),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final authenticated = authState is AuthAuthenticated;
+        return AppScaffold(
+          title: 'Home',
+          // The welcome hero image already carries the brand header, so the
+          // unauthenticated landing screen skips the top app bar to match
+          // the original app's immersive welcome screen.
+          showAppBar: authenticated,
+          body: authenticated ? _buildAuthenticatedHome(context, authState.user) : _buildUnauthenticatedHome(context),
+        );
+      },
     );
   }
 
@@ -40,7 +41,9 @@ class HomePage extends StatelessWidget {
   Widget _buildUnauthenticatedHome(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SingleChildScrollView(
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
       child: Column(
         children: [
           ClipRRect(
@@ -73,6 +76,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

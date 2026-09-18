@@ -11,6 +11,47 @@ import 'package:surabhi/core/widgets/dashboard_header.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/donations_list_page.dart';
 
+List<AppBottomNavItem> _approverBottomNav(BuildContext context, int current) {
+  const color = AppColors.approverColor;
+  return [
+    AppBottomNavItem(
+      icon: Icons.dashboard_rounded,
+      label: 'Dashboard',
+      onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+    ),
+    AppBottomNavItem(
+      icon: Icons.pending_actions,
+      label: 'Pending',
+      onTap: () => navigateToBottomNavTab(
+        context,
+        DonationsListPage(
+          title: 'Pending Approvals',
+          color: color,
+          statusFilter: DonationStatus.pending,
+          showApproveAction: true,
+          bottomNavItems: _approverBottomNav(context, 1),
+          bottomNavIndex: 1,
+        ),
+      ),
+    ),
+    AppBottomNavItem(
+      icon: Icons.history,
+      label: 'History',
+      onTap: () => navigateToBottomNavTab(
+        context,
+        DonationsListPage(
+          title: 'Approval History',
+          color: color,
+          statusFilter: DonationStatus.approved,
+          bottomNavItems: _approverBottomNav(context, 2),
+          bottomNavIndex: 2,
+        ),
+      ),
+    ),
+    const AppBottomNavItem.more(),
+  ];
+}
+
 class ApproverDashboard extends StatelessWidget {
   const ApproverDashboard({super.key});
 
@@ -23,33 +64,7 @@ class ApproverDashboard extends StatelessWidget {
 
     return AppScaffold(
       title: 'Approver Dashboard',
-      bottomNavItems: [
-        const AppBottomNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard'),
-        AppBottomNavItem(
-          icon: Icons.pending_actions,
-          label: 'Pending',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const DonationsListPage(
-                title: 'Pending Approvals',
-                color: color,
-                statusFilter: DonationStatus.pending,
-                showApproveAction: true,
-              ),
-            ),
-          ),
-        ),
-        AppBottomNavItem(
-          icon: Icons.history,
-          label: 'History',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const DonationsListPage(title: 'Approval History', color: color, statusFilter: DonationStatus.approved),
-            ),
-          ),
-        ),
-        const AppBottomNavItem.more(),
-      ],
+      bottomNavItems: _approverBottomNav(context, 0),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -73,14 +88,15 @@ class ApproverDashboard extends StatelessWidget {
                 title: 'Pending Approvals',
                 subtitle: 'Receipts to account',
                 color: color,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const DonationsListPage(
-                      title: 'Pending Approvals',
-                      color: color,
-                      statusFilter: DonationStatus.pending,
-                      showApproveAction: true,
-                    ),
+                onTap: () => navigateToBottomNavTab(
+                  context,
+                  DonationsListPage(
+                    title: 'Pending Approvals',
+                    color: color,
+                    statusFilter: DonationStatus.pending,
+                    showApproveAction: true,
+                    bottomNavItems: _approverBottomNav(context, 1),
+                    bottomNavIndex: 1,
                   ),
                 ),
               ),
@@ -89,13 +105,14 @@ class ApproverDashboard extends StatelessWidget {
                 title: 'Approval History',
                 subtitle: 'Previously accounted',
                 color: color,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const DonationsListPage(
-                      title: 'Approval History',
-                      color: color,
-                      statusFilter: DonationStatus.approved,
-                    ),
+                onTap: () => navigateToBottomNavTab(
+                  context,
+                  DonationsListPage(
+                    title: 'Approval History',
+                    color: color,
+                    statusFilter: DonationStatus.approved,
+                    bottomNavItems: _approverBottomNav(context, 2),
+                    bottomNavIndex: 2,
                   ),
                 ),
               ),

@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Common colors - matched to harekrishnavizag.org / DCC's navy + gold brand
-  static const Color primaryColor = Color(0xFF13224A); // Navy
+  // Common colors - sampled directly from the real app's own bundled
+  // artwork (app icon border + welcome screen banner box), not guessed.
+  static const Color primaryColor = Color(0xFF0E3F69); // Navy
   static const Color secondaryColor = Color(0xFFC99A3D); // Gold
   static const Color accentColor = Color(0xFFE5BD6E); // Light gold accent
   static const Color onPrimary = Colors.white;
@@ -36,7 +37,7 @@ class AppColors {
   static const Color lightOnSurface = Colors.black87;
   static const Color lightBorderColor = Color(0xFFBDBDBD); // grey[400]
   static const Color lightFocusBorder = Color(0xFFC99A3D); // Gold
-  static const Color lightButton = Color(0xFF13224A); // Navy
+  static const Color lightButton = Color(0xFF0E3F69); // Navy
   static const Color lightOnButton = Colors.white;
   static const Color lightTextColor = Color(0xFF333333);
 

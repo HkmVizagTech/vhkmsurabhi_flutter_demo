@@ -1,6 +1,7 @@
 // lib/features/shared/donor/presentation/pages/donor_lookup_page.dart
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/donor_list_tile.dart';
 import 'package:surabhi/features/shared/donor/presentation/pages/donor_detail_page.dart';
@@ -12,8 +13,16 @@ class DonorLookupPage extends StatefulWidget {
   // Donor.EnrolledBy ownership (other preachers' donors/donations stay
   // hidden).
   final String? enrolledByFilter;
+  final List<AppBottomNavItem>? bottomNavItems;
+  final int bottomNavIndex;
 
-  const DonorLookupPage({super.key, required this.color, this.enrolledByFilter});
+  const DonorLookupPage({
+    super.key,
+    required this.color,
+    this.enrolledByFilter,
+    this.bottomNavItems,
+    this.bottomNavIndex = 0,
+  });
 
   @override
   State<DonorLookupPage> createState() => _DonorLookupPageState();
@@ -42,6 +51,8 @@ class _DonorLookupPageState extends State<DonorLookupPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Search Donor',
+      bottomNavItems: widget.bottomNavItems,
+      bottomNavIndex: widget.bottomNavIndex,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

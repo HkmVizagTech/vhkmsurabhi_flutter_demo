@@ -98,7 +98,7 @@ flutter_launcher_icons:
 
 # Splash Screen Configuration (Android, iOS, Web)
 flutter_native_splash:
-  color: "#13224A"
+  color: "#0E3F69"
   image: lib/assets/logos/splash.png
   android: true
   ios: true

@@ -16,3 +16,16 @@ class AppBottomNavItem {
       : onTap = null,
         isMore = true;
 }
+
+/// Navigates to a bottom-nav tab page, keeping the bar visible and the
+/// stack shallow: pushes when leaving the dashboard (so back returns to
+/// it), or replaces when switching between sibling tab pages (so tabs
+/// don't pile up on top of each other).
+void navigateToBottomNavTab(BuildContext context, Widget page) {
+  final isFirst = ModalRoute.of(context)?.isFirst ?? true;
+  if (isFirst) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+  } else {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => page));
+  }
+}

@@ -13,6 +13,39 @@ import 'package:surabhi/features/shared/donation/presentation/pages/donations_li
 import 'package:surabhi/features/shared/donation/presentation/pages/record_donation_page.dart';
 import 'package:surabhi/features/shared/donor/presentation/pages/donor_lookup_page.dart';
 
+List<AppBottomNavItem> _employeeBottomNav(BuildContext context, int current) {
+  const color = AppColors.employeeColor;
+  return [
+    AppBottomNavItem(
+      icon: Icons.dashboard_rounded,
+      label: 'Dashboard',
+      onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+    ),
+    AppBottomNavItem(
+      icon: Icons.person_add,
+      label: 'Add Donor',
+      onTap: () => navigateToBottomNavTab(
+        context,
+        AddDonorPage(bottomNavItems: _employeeBottomNav(context, 1), bottomNavIndex: 1),
+      ),
+    ),
+    AppBottomNavItem(
+      icon: Icons.receipt_long,
+      label: 'Record Donation',
+      onTap: () => navigateToBottomNavTab(
+        context,
+        RecordDonationPage(
+          title: 'Record Donation',
+          color: color,
+          bottomNavItems: _employeeBottomNav(context, 2),
+          bottomNavIndex: 2,
+        ),
+      ),
+    ),
+    const AppBottomNavItem.more(),
+  ];
+}
+
 class EmployeeDashboard extends StatelessWidget {
   const EmployeeDashboard({super.key});
 
@@ -25,22 +58,7 @@ class EmployeeDashboard extends StatelessWidget {
 
     return AppScaffold(
       title: 'Employee Dashboard',
-      bottomNavItems: [
-        const AppBottomNavItem(icon: Icons.dashboard_rounded, label: 'Dashboard'),
-        AppBottomNavItem(
-          icon: Icons.person_add,
-          label: 'Add Donor',
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddDonorPage())),
-        ),
-        AppBottomNavItem(
-          icon: Icons.receipt_long,
-          label: 'Record Donation',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Record Donation', color: color)),
-          ),
-        ),
-        const AppBottomNavItem.more(),
-      ],
+      bottomNavItems: _employeeBottomNav(context, 0),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -64,7 +82,10 @@ class EmployeeDashboard extends StatelessWidget {
                 title: 'Add Donor',
                 subtitle: 'Enroll a new donor',
                 color: color,
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddDonorPage())),
+                onTap: () => navigateToBottomNavTab(
+                  context,
+                  AddDonorPage(bottomNavItems: _employeeBottomNav(context, 1), bottomNavIndex: 1),
+                ),
               ),
               DashboardActionCard(
                 icon: Icons.person_search,
@@ -80,8 +101,14 @@ class EmployeeDashboard extends StatelessWidget {
                 title: 'Record Donation',
                 subtitle: 'Enter a new donation',
                 color: color,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RecordDonationPage(title: 'Record Donation', color: color)),
+                onTap: () => navigateToBottomNavTab(
+                  context,
+                  RecordDonationPage(
+                    title: 'Record Donation',
+                    color: color,
+                    bottomNavItems: _employeeBottomNav(context, 2),
+                    bottomNavIndex: 2,
+                  ),
                 ),
               ),
               DashboardActionCard(

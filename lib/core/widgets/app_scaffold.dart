@@ -26,6 +26,10 @@ class AppScaffold extends StatelessWidget {
   // the full drawer menu instead of navigating.
   final List<AppBottomNavItem>? bottomNavItems;
   final int bottomNavIndex;
+  // Hides the top app bar for an immersive, full-bleed screen (e.g. the
+  // welcome hero image, which already carries its own branding/header).
+  // The drawer is still reachable via the widget's own UI when needed.
+  final bool showAppBar;
 
   const AppScaffold({
     super.key,
@@ -35,24 +39,27 @@ class AppScaffold extends StatelessWidget {
     this.onLeadingPressed,
     this.bottomNavItems,
     this.bottomNavIndex = 0,
+    this.showAppBar = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: RoleBasedAppBar(
-        titleText: title,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notifications coming soon')));
-            },
-          ),
-          ...(actions ?? []),
-        ],
-        onLeadingPressed: onLeadingPressed,
-      ),
+      appBar: showAppBar
+          ? RoleBasedAppBar(
+              titleText: title,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notifications coming soon')));
+                  },
+                ),
+                ...(actions ?? []),
+              ],
+              onLeadingPressed: onLeadingPressed,
+            )
+          : null,
       drawer: Drawer(child: _RoleAwareDrawer()),
       body: body,
       bottomNavigationBar: bottomNavItems == null

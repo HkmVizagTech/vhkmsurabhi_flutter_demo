@@ -7,14 +7,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 class AddDonorPage extends StatefulWidget {
   final String title;
   final Color color;
+  final List<AppBottomNavItem>? bottomNavItems;
+  final int bottomNavIndex;
 
-  const AddDonorPage({super.key, this.title = 'Add Donor', this.color = AppColors.employeeColor});
+  const AddDonorPage({
+    super.key,
+    this.title = 'Add Donor',
+    this.color = AppColors.employeeColor,
+    this.bottomNavItems,
+    this.bottomNavIndex = 0,
+  });
 
   @override
   State<AddDonorPage> createState() => _AddDonorPageState();
@@ -103,6 +112,8 @@ class _AddDonorPageState extends State<AddDonorPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: widget.title,
+      bottomNavItems: widget.bottomNavItems,
+      bottomNavIndex: widget.bottomNavIndex,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: _submitted ? _buildSuccess() : _buildForm(),
