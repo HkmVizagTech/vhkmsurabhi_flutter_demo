@@ -40,36 +40,39 @@ class HomePage extends StatelessWidget {
   Widget _buildUnauthenticatedHome(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildBrandMark(theme),
-            const SizedBox(height: 28),
-            Text(
-              'Welcome to Surabhi',
-              style: theme.textTheme.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'A comprehensive role-based management system for organizations.',
-              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 36),
-            SizedBox(
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+            child: Image.asset(
+              'lib/assets/images/Welcome_Screen.png',
               width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () => context.go('/login'),
-                icon: const Icon(Icons.login_rounded),
-                label: const Text('Login to Continue'),
-              ),
+              fit: BoxFit.cover,
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                Text(
+                  'A comprehensive role-based management system for organizations.',
+                  style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => context.go('/login'),
+                    icon: const Icon(Icons.login_rounded),
+                    label: const Text('Login to Continue'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
