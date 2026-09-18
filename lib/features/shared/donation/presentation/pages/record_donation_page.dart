@@ -1,7 +1,10 @@
 // lib/features/shared/donation/presentation/pages/record_donation_page.dart
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/core/utils/receipt_number.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
+import 'package:surabhi/features/shared/donation/data/receipt_model.dart';
+import 'package:surabhi/features/shared/donation/presentation/pages/receipt_page.dart';
 
 /// Shared "record a donation" form. Used as Employee's "Record Donation"
 /// and Preacher's "Record Seva" (same underlying DCC workflow: add a
@@ -28,7 +31,7 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
   String _modeOfPayment = MockData.modesOfPayment.first;
 
   bool _submitted = false;
-  String? _receiptNumber;
+  Receipt? _receipt;
 
   @override
   void initState() {
@@ -70,8 +73,30 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
       return;
     }
     if (!_formKey.currentState!.validate()) return;
+    final donor = _selectedDonor!;
+    final now = DateTime.now();
     setState(() {
-      _receiptNumber = '$_trust|2026|${DateTime.now().millisecondsSinceEpoch % 10000}';
+      _receipt = Receipt(
+        // DCC's real ReceiptTracker sequence lives server-side; this is a demo stand-in.
+        receiptNumber: buildReceiptNumber(trust: _trust, date: now, sequence: now.millisecondsSinceEpoch % 10000),
+        receiptDate: now,
+        trust: _trust,
+        donorName: donor.name,
+        address: donor.address,
+        sevakName: donor.enrolledByCode,
+        mobile: donor.mobile,
+        email: donor.email,
+        pan: donor.pan,
+        amount: num.parse(_amountController.text).toInt(),
+        modeOfPayment: _modeOfPayment,
+        paymentRefNo: _modeOfPayment == 'Online' ? _referenceNumberController.text.trim() : null,
+        paymentDate: _modeOfPayment == 'Online' ? now : null,
+        enrolledBy: donor.enrolledByCode,
+        sevaName: '$_sevaCategory - ${_sevaSubCategory.name}',
+        isReceiptAccounted: false,
+        isReceiptCancelled: false,
+        isTaxExemptionRequired: donor.pan != null,
+      );
       _submitted = true;
     });
   }
@@ -188,6 +213,7 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
   }
 
   Widget _buildSuccess() {
+    final receipt = _receipt!;
     return Column(
       children: [
         const SizedBox(height: 24),
@@ -195,17 +221,18 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         const SizedBox(height: 16),
         const Text('Donation Recorded', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        Text('Receipt No: $_receiptNumber', style: TextStyle(color: widget.color, fontWeight: FontWeight.bold)),
+        Text('Receipt No: ${receipt.receiptNumber}', style: TextStyle(color: widget.color, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text('₹${_amountController.text} from ${_selectedDonor?.name ?? ''}'),
+        Text('₹${receipt.amount} from ${receipt.donorName}'),
         const SizedBox(height: 4),
-        Text('$_sevaCategory · ${_sevaSubCategory.name} · $_modeOfPayment', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-        if (_modeOfPayment == 'Online' && _referenceNumberController.text.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text('Ref: ${_referenceNumberController.text}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-        ],
+        Text(receipt.sevaName, style: const TextStyle(fontSize: 13, color: Colors.grey)),
         const SizedBox(height: 24),
-        OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.download), label: const Text('Download Receipt (demo)')),
+        ElevatedButton.icon(
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReceiptPage(receipt: receipt))),
+          style: ElevatedButton.styleFrom(backgroundColor: widget.color, minimumSize: const Size.fromHeight(50)),
+          icon: const Icon(Icons.receipt_long, color: Colors.white),
+          label: const Text('View Receipt', style: TextStyle(color: Colors.white)),
+        ),
         const SizedBox(height: 12),
         ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Done')),
       ],

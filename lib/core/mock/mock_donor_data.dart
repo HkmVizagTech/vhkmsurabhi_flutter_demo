@@ -15,6 +15,8 @@ class MockDonor {
   final String? email;
   final String city;
   final String enrolledByCode;
+  final String? address;
+  final String? pan;
 
   const MockDonor({
     required this.id,
@@ -23,8 +25,70 @@ class MockDonor {
     required this.city,
     required this.enrolledByCode,
     this.email,
+    this.address,
+    this.pan,
   });
 }
+
+/// Trust (DCC's AccountType) letterhead details used on the donation
+/// receipt - name, registered address, contact, PAN and logo/stamp
+/// assets, grounded in DCC's PDFService.GenerateDonationReceipt.
+class TrustProfile {
+  final String foundationName;
+  final String addressLine1;
+  final String addressLine2;
+  final String phone;
+  final String email;
+  final String? pan;
+  final String? logoAsset;
+  final String stampAsset;
+  final String? registeredOffice;
+
+  const TrustProfile({
+    required this.foundationName,
+    required this.addressLine1,
+    required this.addressLine2,
+    required this.phone,
+    required this.email,
+    required this.stampAsset,
+    this.pan,
+    this.logoAsset,
+    this.registeredOffice,
+  });
+}
+
+const Map<String, TrustProfile> trustProfiles = {
+  'HKMV': TrustProfile(
+    foundationName: 'HARE KRISHNA MOVEMENT VISAKHAPATNAM',
+    addressLine1: 'Branch Office : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
+    addressLine2: 'IIM Road, Gambheeram, Visakhapatanam - 530052. (A.P.) INDIA.',
+    phone: '+91 9030696108',
+    email: 'donorcare@hkmvizag.org',
+    logoAsset: 'lib/assets/images/hkmvizaglogo.jpg',
+    stampAsset: 'lib/assets/images/hkmvstamp.jpg',
+  ),
+  'HKMI': TrustProfile(
+    foundationName: 'HARE KRISHNA MOVEMENT INDIA',
+    addressLine1: 'Branch Office : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
+    addressLine2: 'IIM Road, Gambheeram, Visakhapatanam - 530052. (A.P.) INDIA.',
+    phone: '+91 9030696108',
+    email: 'donorcare@hkmvizag.org',
+    pan: 'AABTH4550P',
+    logoAsset: 'lib/assets/images/hkmindialogo.JPG',
+    stampAsset: 'lib/assets/images/hkmistamp.png',
+    registeredOffice: 'Regd. & Head office : Sri Radha Vrindavan Chandra Mandir, Chatikara Road, '
+        'Vrindavan, Mathura District, U.P. - 281 121',
+  ),
+  'TSC': TrustProfile(
+    foundationName: 'TOUCHSTONE CHARITIES VISAKHAPATNAM',
+    addressLine1: 'Branch Office : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
+    addressLine2: 'IIM Road, Gambheeram, Visakhapatanam - 530052. (A.P.) INDIA.',
+    phone: '+91 9030696108',
+    email: 'donorcare@hkmvizag.org',
+    pan: 'AACTT5014B',
+    stampAsset: 'lib/assets/images/tcvstamp.png',
+  ),
+};
 
 class MockDonation {
   final String receiptNumber;
@@ -108,14 +172,14 @@ class MockData {
   static const List<String> modesOfPayment = ['Cash', 'Card', 'Online', 'Cheque/DD', 'Others'];
 
   static final List<MockDonor> donors = [
-    const MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com'),
-    const MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com'),
-    const MockDonor(id: 'D1026', name: 'Suresh Babu Kotturi', mobile: '9866123003', city: 'Visakhapatnam', enrolledByCode: 'ABRD'),
-    const MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com'),
-    const MockDonor(id: 'D1028', name: 'Krishna Murthy Yalamanchili', mobile: '9866123005', city: 'Rajahmundry', enrolledByCode: 'JTMD'),
-    const MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com'),
-    const MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD'),
-    const MockDonor(id: 'D1031', name: 'Sita Mahalakshmi Nallamothu', mobile: '9866123008', city: 'Visakhapatnam', enrolledByCode: 'ABRD'),
+    const MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com', address: '12-3-45, Dwaraka Nagar, Visakhapatnam', pan: 'ABCDE1234F'),
+    const MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com', address: '4-6-12, Governorpet, Vijayawada'),
+    const MockDonor(id: 'D1026', name: 'Suresh Babu Kotturi', mobile: '9866123003', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '9-1-23, MVP Colony, Visakhapatnam'),
+    const MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com', address: '3-2-8, Brodipet, Guntur', pan: 'BXYPR5678K'),
+    const MockDonor(id: 'D1028', name: 'Krishna Murthy Yalamanchili', mobile: '9866123005', city: 'Rajahmundry', enrolledByCode: 'JTMD', address: '7-11-2, Danavaipeta, Rajahmundry'),
+    const MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com', address: '15-8-9, Seethammadhara, Visakhapatnam'),
+    const MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD', address: '2-4-19, Suryaraopeta, Kakinada'),
+    const MockDonor(id: 'D1031', name: 'Sita Mahalakshmi Nallamothu', mobile: '9866123008', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '11-2-6, Pedagantyada, Visakhapatnam'),
   ];
 
   static final List<MockDonation> donations = _generateDonations();
