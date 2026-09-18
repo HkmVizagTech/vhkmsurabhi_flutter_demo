@@ -29,6 +29,7 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
   String _sevaCategory = MockData.sevaCategories.first;
   late SevaSubCategory _sevaSubCategory = MockData.subCategoriesFor(_sevaCategory).first;
   String _modeOfPayment = MockData.modesOfPayment.first;
+  bool _taxExemptionRequired = false;
 
   bool _submitted = false;
   Receipt? _receipt;
@@ -75,6 +76,11 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
     if (!_formKey.currentState!.validate()) return;
     final donor = _selectedDonor!;
     final now = DateTime.now();
+    // Mirrors DCC's GetDonationReceipt switch on ModeOfPayment: only the
+    // fields that mode actually captures are populated, everything else
+    // stays blank (this form only captures a reference number for Online).
+    final paymentRefNo = _modeOfPayment == 'Online' ? _referenceNumberController.text.trim() : '';
+    final paymentDate = _modeOfPayment == 'Online' ? now : null;
     setState(() {
       _receipt = Receipt(
         // DCC's real ReceiptTracker sequence lives server-side; this is a demo stand-in.
@@ -83,19 +89,27 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         trust: _trust,
         donorName: donor.name,
         address: donor.address,
-        sevakName: donor.enrolledByCode,
+        // DCC's PatronNumber is just the donor's own DonorNumber, not a
+        // separate patron-scheme id.
+        patronNumber: donor.id,
+        sevakName: '',
         mobile: donor.mobile,
         email: donor.email,
-        pan: donor.pan,
+        // DCC only ever pulls the donor's PAN onto the receipt when the
+        // tax-exemption flag is set for this donation - not just because
+        // the donor happens to have one on file.
+        pan: _taxExemptionRequired ? donor.pan : '',
         amount: num.parse(_amountController.text).toInt(),
         modeOfPayment: _modeOfPayment,
-        paymentRefNo: _modeOfPayment == 'Online' ? _referenceNumberController.text.trim() : null,
-        paymentDate: _modeOfPayment == 'Online' ? now : null,
+        paymentRefNo: paymentRefNo,
+        paymentDate: paymentDate,
+        bank: '',
         enrolledBy: donor.enrolledByCode,
+        cdc: '',
         sevaName: '$_sevaCategory - ${_sevaSubCategory.name}',
         isReceiptAccounted: false,
         isReceiptCancelled: false,
-        isTaxExemptionRequired: donor.pan != null,
+        isTaxExemptionRequired: _taxExemptionRequired,
       );
       _submitted = true;
     });
@@ -183,7 +197,16 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
               },
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Tax exemption Required'),
+            subtitle: const Text('Under section 80G of the Income Tax Act'),
+            value: _taxExemptionRequired,
+            activeThumbColor: widget.color,
+            onChanged: (v) => setState(() => _taxExemptionRequired = v),
+          ),
+          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _submit,
             style: ElevatedButton.styleFrom(backgroundColor: widget.color, minimumSize: const Size.fromHeight(50)),
@@ -209,7 +232,12 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         );
       },
     );
-    if (donor != null) setState(() => _selectedDonor = donor);
+    if (donor != null) {
+      setState(() {
+        _selectedDonor = donor;
+        _taxExemptionRequired = donor.pan != null;
+      });
+    }
   }
 
   Widget _buildSuccess() {

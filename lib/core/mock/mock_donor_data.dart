@@ -35,6 +35,7 @@ class MockDonor {
 /// assets, grounded in DCC's PDFService.GenerateDonationReceipt.
 class TrustProfile {
   final String foundationName;
+  final String footerFoundationName;
   final String addressLine1;
   final String addressLine2;
   final String phone;
@@ -46,6 +47,7 @@ class TrustProfile {
 
   const TrustProfile({
     required this.foundationName,
+    required this.footerFoundationName,
     required this.addressLine1,
     required this.addressLine2,
     required this.phone,
@@ -57,10 +59,13 @@ class TrustProfile {
   });
 }
 
+// Exact text from DCC/Common/PDFService.cs GenerateDonationReceipt's
+// per-AccountType switch (GetReceiptHeader/GetReceiptFooter calls).
 const Map<String, TrustProfile> trustProfiles = {
   'HKMV': TrustProfile(
     foundationName: 'HARE KRISHNA MOVEMENT VISAKHAPATNAM',
-    addressLine1: 'Branch Office : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
+    footerFoundationName: 'HKM, Visakhapatnam',
+    addressLine1: '#8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
     addressLine2: 'IIM Road, Gambheeram, Visakhapatanam - 530052. (A.P.) INDIA.',
     phone: '+91 9030696108',
     email: 'donorcare@hkmvizag.org',
@@ -69,6 +74,7 @@ const Map<String, TrustProfile> trustProfiles = {
   ),
   'HKMI': TrustProfile(
     foundationName: 'HARE KRISHNA MOVEMENT INDIA',
+    footerFoundationName: 'HKM INDIA',
     addressLine1: 'Branch Office : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
     addressLine2: 'IIM Road, Gambheeram, Visakhapatanam - 530052. (A.P.) INDIA.',
     phone: '+91 9030696108',
@@ -81,7 +87,8 @@ const Map<String, TrustProfile> trustProfiles = {
   ),
   'TSC': TrustProfile(
     foundationName: 'TOUCHSTONE CHARITIES VISAKHAPATNAM',
-    addressLine1: 'Branch Office : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
+    footerFoundationName: 'Touchstone Charities, Visakhapatnam',
+    addressLine1: 'Regd. Off : #8-22, Near RTO Office, Next to Akshaya Patra Foundation Kitchen,',
     addressLine2: 'IIM Road, Gambheeram, Visakhapatanam - 530052. (A.P.) INDIA.',
     phone: '+91 9030696108',
     email: 'donorcare@hkmvizag.org',

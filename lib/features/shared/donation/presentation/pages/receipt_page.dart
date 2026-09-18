@@ -1,9 +1,9 @@
 // lib/features/shared/donation/presentation/pages/receipt_page.dart
 //
-// Renders a donation receipt matching DCC's actual PDF layout
-// (DCC/Common/PDFService.cs GenerateDonationReceipt), section for section,
-// so what preachers/employees see here is what the real backend's
-// downloaded PDF would look like.
+// Renders a donation receipt matching DCC's actual PDF layout field for
+// field (DCC/Common/PDFService.cs GenerateDonationReceipt/GetReceiptHeader/
+// GetReceiptFooter), including which fields sit on the same row and which
+// are always shown (blank rather than hidden) even when empty.
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
@@ -49,24 +49,31 @@ class ReceiptPage extends StatelessWidget {
                   _kv('Date', _formatDate(receipt.receiptDate), bold: true),
                   const SizedBox(height: 16),
                   _kv('Name of the Donor', receipt.donorName),
-                  if (receipt.address != null) _kv('Address', receipt.address!),
-                  if (receipt.patronNumber != null) _kv('Reference (Patronship No)', receipt.patronNumber!, bold: true),
-                  _kv('Sevak Name', receipt.sevakName),
-                  _kv('Mobile', receipt.mobile),
-                  _kv('Tax exemption Required', receipt.isTaxExemptionRequired ? 'YES' : 'NO', bold: true, suffix: ' (Under section 80G, of the Income Tax Act)'),
-                  if (receipt.email != null) _kv('E-mail', receipt.email!),
-                  if (receipt.pan != null) _kv('PAN', receipt.pan!),
-                  const SizedBox(height: 8),
-                  _kv('Rs.', '${formatIndianAmount(receipt.amount)} /-', bold: true),
-                  _kv('Rupees', '${amountToWords(receipt.amount)} ONLY', bold: true),
-                  const SizedBox(height: 8),
-                  _kv('by', receipt.modeOfPayment, bold: true),
-                  if (receipt.paymentRefNo != null) _kv('Reference No', receipt.paymentRefNo!),
-                  if (receipt.paymentDate != null) _kv('Date', _formatDate(receipt.paymentDate!)),
-                  if (receipt.bank != null) _kv('Bank', receipt.bank!),
-                  _kv('Enrolled by', receipt.enrolledBy, bold: true),
-                  if (receipt.cdc != null) _kv('CDC', receipt.cdc!, bold: true),
-                  _kv('Towards', receipt.sevaName, bold: true),
+                  _kv('Address', receipt.address ?? ''),
+                  _row2('Reference(Patronship No)', receipt.patronNumber ?? '', bold1: true, 'Sevak Name', receipt.sevakName),
+                  _row2('Phone', 'Res :        Off :', 'Mobile', receipt.mobile),
+                  _kv('Tax exemption Required', receipt.isTaxExemptionRequired == true ? 'YES' : 'NO', bold: true, suffix: ' (Under section 80G, of the Income Tax Act)'),
+                  _row2('E-mail', receipt.email ?? '', 'PAN', receipt.pan ?? ''),
+                  _row2('Rs.', '${formatIndianAmount(receipt.amount)} /-', bold1: true, 'Rupees', '${amountToWords(receipt.amount)} ONLY', bold2: true),
+                  _row3(
+                    'by',
+                    receipt.modeOfPayment,
+                    bold1: true,
+                    'Reference No',
+                    receipt.paymentRefNo ?? '',
+                    'Date',
+                    receipt.paymentDate != null ? _formatDate(receipt.paymentDate!) : '',
+                  ),
+                  _row4(
+                    'Bank',
+                    receipt.bank ?? '',
+                    'Enrolled by',
+                    receipt.enrolledBy,
+                    'CDC',
+                    receipt.cdc ?? '',
+                    'Towards',
+                    receipt.sevaName,
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     '*Cheque Payment : Subject to realization. We do not accept anonymous donations.',
@@ -79,7 +86,7 @@ class ReceiptPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Center(
                     child: Text(
-                      'Hare Krishna Hare Krishna Krishna Krishna Hare Hare\nHare Rama Hare Rama Rama Rama Hare Hare',
+                      'Hare Krishna Hare Krishna Krishna Krishna Hare Hare  Hare Rama Hare Rama Rama Rama Hare Hare',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
@@ -167,7 +174,14 @@ class ReceiptPage extends StatelessWidget {
       children: [
         Image.asset(profile.stampAsset, width: 64, height: 64, fit: BoxFit.contain),
         const SizedBox(height: 4),
-        Text.rich(TextSpan(children: [const TextSpan(text: 'for '), TextSpan(text: profile.foundationName, style: const TextStyle(fontWeight: FontWeight.bold))])),
+        Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(text: 'for '),
+              TextSpan(text: profile.footerFoundationName, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
         if (profile.registeredOffice != null) ...[
           const SizedBox(height: 4),
           Text(profile.registeredOffice!, style: const TextStyle(fontSize: 9, color: Colors.grey)),
@@ -177,14 +191,14 @@ class ReceiptPage extends StatelessWidget {
   }
 
   Widget _taxNote() {
-    final text = receipt.isReceiptAccounted && receipt.isTaxExemptionRequired
+    final text = receipt.isReceiptAccounted && receipt.isTaxExemptionRequired == true
         ? 'NOTE: As per the new INCOME TAX law of the Government of India, you will receive a 10BE (Tax '
               'Exemption Certificate) form for your donation. This form will be sent to your registered email ID '
               'at the end of the current financial year and can be used for claiming tax exemption under Section '
               '80G of the INCOME TAX Act.'
         : (!receipt.isReceiptAccounted && !receipt.isReceiptCancelled ? 'You will get a confirmed receipt once it is accounted' : null);
     if (text == null) return const SizedBox.shrink();
-    return Text(text, style: const TextStyle(fontSize: 11, color: Colors.grey));
+    return Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: Colors.grey));
   }
 
   Widget _kv(String label, String value, {bool bold = false, String suffix = ''}) {
@@ -199,6 +213,61 @@ class ReceiptPage extends StatelessWidget {
             TextSpan(text: suffix),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _field(String label, String value, {bool bold = false}) {
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 12, color: Colors.black87),
+        children: [
+          TextSpan(text: '$label : '),
+          TextSpan(text: value, style: TextStyle(fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
+        ],
+      ),
+    );
+  }
+
+  Widget _row2(String l1, String v1, String l2, String v2, {bool bold1 = false, bool bold2 = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 3, child: _field(l1, v1, bold: bold1)),
+          Expanded(flex: 2, child: _field(l2, v2, bold: bold2)),
+        ],
+      ),
+    );
+  }
+
+  Widget _row3(String l1, String v1, String l2, String v2, String l3, String v3, {bool bold1 = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 2, child: _field(l1, v1, bold: bold1)),
+          Expanded(flex: 3, child: _field(l2, v2)),
+          Expanded(flex: 2, child: _field(l3, v3)),
+        ],
+      ),
+    );
+  }
+
+  Widget _row4(String l1, String v1, String l2, String v2, String l3, String v3, String l4, String v4) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 4,
+        children: [
+          _field(l1, v1),
+          _field(l2, v2, bold: true),
+          _field(l3, v3, bold: true),
+          _field(l4, v4, bold: true),
+        ],
       ),
     );
   }
