@@ -1,7 +1,7 @@
 // lib/features/shared/donor/presentation/pages/donor_detail_page.dart
 //
-// Donor 360 - mirrors DCC's Donor 360 page: identity, one-tap call /
-// WhatsApp, lifetime and financial-year giving, channel and festival
+// Donor 360 - mirrors DCC's Donor 360 page: identity, one-tap call,
+// lifetime and financial-year giving, channel and festival
 // breakdowns, and every receipt tagged with its festival and channel.
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/donor_insights.dart';
@@ -155,33 +155,14 @@ class _DonorDetailPageState extends State<DonorDetailPage> {
   }
 
   Widget _actions(DonorInsights insights) {
-    final bd = insights.daysToBirthday;
-    final reason = bd != null && bd <= 7
-        ? ContactReason.birthday
-        : switch (insights.status) {
-            CareStatus.lapsed => ContactReason.lapsed,
-            CareStatus.never => ContactReason.neverDonated,
-            CareStatus.active => ContactReason.thankYou,
-          };
-    // Three buttons across a phone: the theme's 20px side padding would wrap labels
-    final compact = OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 13));
     return Row(
       children: [
         Expanded(
           child: OutlinedButton.icon(
-            style: compact,
+            style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 13)),
             onPressed: () => callDonor(context, donor.mobile),
             icon: const Icon(Icons.call, size: 18),
             label: const Text('Call', maxLines: 1),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: OutlinedButton.icon(
-            style: compact,
-            onPressed: () => whatsappDonor(context, donor.mobile, donor.name, reason),
-            icon: const Icon(Icons.chat, size: 18, color: Color(0xFF25D366)),
-            label: const FittedBox(child: Text('WhatsApp', maxLines: 1)),
           ),
         ),
         const SizedBox(width: 8),
@@ -199,7 +180,7 @@ class _DonorDetailPageState extends State<DonorDetailPage> {
             ),
             style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 14)),
             icon: const Icon(Icons.receipt_long, size: 18),
-            label: const FittedBox(child: Text('Receipt', maxLines: 1)),
+            label: const Text('Receipt', maxLines: 1),
           ),
         ),
       ],
@@ -209,7 +190,6 @@ class _DonorDetailPageState extends State<DonorDetailPage> {
   Widget _profile() {
     return Column(
       children: [
-        _infoRow(Icons.phone, donor.mobile),
         if (donor.email != null) _infoRow(Icons.email, donor.email!),
         if (donor.address != null) _infoRow(Icons.home_outlined, donor.address!),
         _infoRow(Icons.location_city, donor.city),

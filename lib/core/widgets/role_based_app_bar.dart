@@ -5,21 +5,27 @@ class RoleBasedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String titleText;
   final List<Widget> actions; // Dynamic actions based on role
   final VoidCallback? onLeadingPressed; // Optional for a custom leading icon action
+  // A Scaffold drawer otherwise replaces the back arrow with the menu icon,
+  // leaving pushed detail pages with no way back on a phone or the web.
+  final bool showBackButton;
 
   const RoleBasedAppBar({
     super.key,
     required this.titleText,
     this.actions = const [], // Default to empty list
     this.onLeadingPressed,
+    this.showBackButton = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       title: Text(titleText, style: Theme.of(context).appBarTheme.titleTextStyle),
-      leading: onLeadingPressed != null
-          ? IconButton(icon: const Icon(Icons.menu_rounded), onPressed: onLeadingPressed)
-          : null, // Let AppBar decide if it should show back button
+      leading: showBackButton
+          ? const BackButton()
+          : onLeadingPressed != null
+              ? IconButton(icon: const Icon(Icons.menu_rounded), onPressed: onLeadingPressed)
+              : null, // Let AppBar decide if it should show back button
       actions: actions, // Dynamically populated actions
     );
   }

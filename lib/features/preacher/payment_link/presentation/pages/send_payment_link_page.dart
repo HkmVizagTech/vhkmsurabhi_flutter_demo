@@ -149,6 +149,7 @@ class _SendPaymentLinkPageState extends State<SendPaymentLinkPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Card(
+          margin: EdgeInsets.zero,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

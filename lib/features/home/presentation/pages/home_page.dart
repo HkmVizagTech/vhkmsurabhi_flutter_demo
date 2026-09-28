@@ -41,42 +41,56 @@ class HomePage extends StatelessWidget {
   Widget _buildUnauthenticatedHome(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SafeArea(
-      bottom: false,
-      child: SingleChildScrollView(
+    final footer = Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
-            child: Image.asset(
-              'lib/assets/images/Welcome_Screen.png',
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+          Text(
+            'A comprehensive role-based management system for organizations.',
+            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+            textAlign: TextAlign.center,
           ),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                Text(
-                  'A comprehensive role-based management system for organizations.',
-                  style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => context.go('/login'),
-                    icon: const Icon(Icons.login_rounded),
-                    label: const Text('Login to Continue'),
-                  ),
-                ),
-              ],
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => context.go('/login'),
+              icon: const Icon(Icons.login_rounded),
+              label: const Text('Login to Continue'),
             ),
           ),
         ],
       ),
+    );
+
+    // The hero is a tall portrait image: let it take whatever height is
+    // left above the footer so the login button is always on screen, and
+    // cap the width so it doesn't stretch across a desktop browser.
+    return SafeArea(
+      bottom: false,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final hero = ClipRRect(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+                child: Image.asset(
+                  'lib/assets/images/Welcome_Screen.png',
+                  width: double.infinity,
+                  height: constraints.maxHeight < 560 ? 320 : double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
+              );
+              if (constraints.maxHeight < 560) {
+                return SingleChildScrollView(child: Column(children: [hero, footer]));
+              }
+              return Column(children: [Expanded(child: hero), footer]);
+            },
+          ),
+        ),
       ),
     );
   }

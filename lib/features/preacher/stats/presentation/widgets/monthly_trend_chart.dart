@@ -1,6 +1,8 @@
 // lib/features/preacher/stats/presentation/widgets/monthly_trend_chart.dart
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:surabhi/core/mock/donor_insights.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/preacher/stats/data/preacher_stats_mock_data.dart';
 
 class MonthlyTrendChart extends StatelessWidget {
@@ -19,6 +21,16 @@ class MonthlyTrendChart extends StatelessWidget {
         BarChartData(
           maxY: maxAmount * 1.2,
           gridData: const FlGridData(show: false),
+          // Default tooltip shows the raw number (162500); show ₹1,62,500
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => AppColors.ink,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) => BarTooltipItem(
+                '${data[group.x].monthLabel}\n${inr(rod.toY.toInt())}',
+                const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+              ),
+            ),
+          ),
           borderData: FlBorderData(show: false),
           titlesData: FlTitlesData(
             leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),

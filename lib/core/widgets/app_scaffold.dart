@@ -50,6 +50,8 @@ class AppScaffold extends StatelessWidget {
       appBar: showAppBar
           ? RoleBasedAppBar(
               titleText: title,
+              // Tab pages keep the menu; detail pages pushed on top get a back arrow
+              showBackButton: bottomNavItems == null && (ModalRoute.of(context)?.canPop ?? false),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.notifications),

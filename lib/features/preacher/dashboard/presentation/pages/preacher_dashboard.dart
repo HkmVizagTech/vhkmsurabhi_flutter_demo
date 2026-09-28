@@ -108,6 +108,7 @@ class PreacherDashboard extends StatelessWidget {
           const _SectionTitle('Donations by Trust', color: color),
           const SizedBox(height: 10),
           Card(
+            margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: TrustWiseChart(data: stats.trustWise, accentColor: color),
@@ -117,6 +118,7 @@ class PreacherDashboard extends StatelessWidget {
           const _SectionTitle('Monthly Trend', color: color),
           const SizedBox(height: 10),
           Card(
+            margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: MonthlyTrendChart(data: stats.monthlyTrend, color: color),
@@ -125,13 +127,10 @@ class PreacherDashboard extends StatelessWidget {
           const SizedBox(height: 20),
           const _SectionTitle('Quick Actions', color: color),
           const SizedBox(height: 10),
-          GridView.count(
-            crossAxisCount: 2,
+          GridView(
+            gridDelegate: kActionCardGridDelegate,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.1,
             children: [
               DashboardActionCard(
                 icon: Icons.person_add,

@@ -432,7 +432,7 @@ class _DonorPickerSheetState extends State<_DonorPickerSheet> {
             controller: _searchController,
             autofocus: true,
             decoration: const InputDecoration(
-              hintText: 'Search by name, mobile or Donor ID',
+              hintText: 'Name, mobile or Donor ID',
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: _onSearchChanged,
@@ -449,7 +449,7 @@ class _DonorPickerSheetState extends State<_DonorPickerSheet> {
                       return ListTile(
                         leading: CircleAvatar(child: Text(d.name[0])),
                         title: Text(d.name),
-                        subtitle: Text('${d.id} · ${d.mobile} · ${d.city}'),
+                        subtitle: Text('${d.id} · ${d.city}'),
                         onTap: () => Navigator.of(context).pop(d),
                       );
                     },

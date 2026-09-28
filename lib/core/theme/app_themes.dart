@@ -174,7 +174,8 @@ final ThemeData lightTheme = ThemeData(
       borderRadius: BorderRadius.circular(_kCardRadius),
       side: BorderSide(color: AppColors.lightBorderColor.withValues(alpha: 0.7)),
     ),
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    // Pages already pad their content; a side margin here double-indents cards on phones
+    margin: const EdgeInsets.symmetric(vertical: 6),
   ),
 
   chipTheme: ChipThemeData(
@@ -297,7 +298,8 @@ final ThemeData darkTheme = ThemeData(
       borderRadius: BorderRadius.circular(_kCardRadius),
       side: BorderSide(color: AppColors.darkBorderColor.withValues(alpha: 0.6)),
     ),
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    // Pages already pad their content; a side margin here double-indents cards on phones
+    margin: const EdgeInsets.symmetric(vertical: 6),
   ),
 
   chipTheme: ChipThemeData(

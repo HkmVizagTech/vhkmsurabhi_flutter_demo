@@ -83,7 +83,7 @@ class _DonorLookupPageState extends State<DonorLookupPage> {
               controller: _controller,
               onChanged: _search,
               decoration: InputDecoration(
-                hintText: 'Search by name, mobile or Donor ID',
+                hintText: 'Name, mobile or Donor ID',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 suffixIcon: _controller.text.isEmpty

@@ -75,13 +75,10 @@ class ApproverDashboard extends StatelessWidget {
             color: color,
           ),
           const SizedBox(height: 20),
-          GridView.count(
-            crossAxisCount: 2,
+          GridView(
+            gridDelegate: kActionCardGridDelegate,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.1,
             children: [
               DashboardActionCard(
                 icon: Icons.pending_actions,

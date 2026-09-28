@@ -20,11 +20,15 @@ class DonorListTile extends StatelessWidget {
           backgroundColor: color.withValues(alpha: 0.15),
           child: Text(donor.name[0], style: TextStyle(color: color, fontWeight: FontWeight.bold)),
         ),
-        title: Row(
+        // Wrap so the PATRON chip drops below the name on narrow phones
+        // instead of squeezing the name down to a couple of letters
+        title: Wrap(
+          spacing: 6,
+          runSpacing: 2,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Flexible(child: Text(donor.name, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+            Text(donor.name, style: const TextStyle(fontWeight: FontWeight.bold)),
             if (donor.isPatron) ...[
-              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(4)),
@@ -33,7 +37,7 @@ class DonorListTile extends StatelessWidget {
             ],
           ],
         ),
-        subtitle: Text('${donor.id} · ${donor.mobile} · ${donor.city}'),
+        subtitle: Text('${donor.id} · ${donor.city}'),
         trailing: const Icon(Icons.chevron_right_rounded),
         onTap: onTap,
       ),

@@ -1,6 +1,16 @@
 // lib/core/widgets/dashboard_action_card.dart
 import 'package:flutter/material.dart';
 
+/// Two action cards per row at a fixed height. An aspect ratio made cards
+/// shorter on narrow phones and cut off their text; a fixed extent fits the
+/// icon, a two-line title and a two-line subtitle at every width.
+const kActionCardGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: 2,
+  crossAxisSpacing: 12,
+  mainAxisSpacing: 12,
+  mainAxisExtent: 170,
+);
+
 /// A tappable action tile used on role dashboards to surface that role's
 /// key features as a grid instead of a single block of placeholder text.
 class DashboardActionCard extends StatelessWidget {
@@ -22,6 +32,7 @@ class DashboardActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -37,7 +48,12 @@ class DashboardActionCard extends StatelessWidget {
                 child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(height: 14),
-              Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontSize: 15)),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontSize: 15),
+              ),
               const SizedBox(height: 4),
               Text(
                 subtitle,

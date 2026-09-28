@@ -2,7 +2,7 @@
 //
 // Donor care follow-ups for a preacher - the mobile side of DCC's
 // sp_GetPreacherDonorCare: who has lapsed, whose birthday is coming up,
-// and who enrolled but never gave, each with one-tap call / WhatsApp.
+// and who enrolled but never gave, each with a one-tap call.
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/donor_insights.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
@@ -109,16 +109,6 @@ class _DonorCarePageState extends State<DonorCarePage> {
 
   Widget _tile(DonorInsights ins, _CareTab tab) {
     final donor = ins.donor;
-    final reason = switch (tab) {
-      _CareTab.birthdays => ContactReason.birthday,
-      _CareTab.lapsed => ContactReason.lapsed,
-      _CareTab.never => ContactReason.neverDonated,
-      _CareTab.all => switch (ins.status) {
-          CareStatus.lapsed => ContactReason.lapsed,
-          CareStatus.never => ContactReason.neverDonated,
-          CareStatus.active => ContactReason.thankYou,
-        },
-    };
 
     final String subtitle;
     switch (tab) {
@@ -158,12 +148,13 @@ class _DonorCarePageState extends State<DonorCarePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    // Wrap rather than truncate: full names are long on a phone
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Flexible(
-                          child: Text(donor.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        ),
-                        const SizedBox(width: 6),
+                        Text(donor.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                         StatusChip(label: label, color: color),
                       ],
                     ),
@@ -178,11 +169,6 @@ class _DonorCarePageState extends State<DonorCarePage> {
                 tooltip: 'Call',
                 icon: const Icon(Icons.call, color: AppColors.gold),
                 onPressed: () => callDonor(context, donor.mobile),
-              ),
-              IconButton(
-                tooltip: 'WhatsApp',
-                icon: const Icon(Icons.chat, color: Color(0xFF25D366)),
-                onPressed: () => whatsappDonor(context, donor.mobile, donor.name, reason),
               ),
             ],
           ),
