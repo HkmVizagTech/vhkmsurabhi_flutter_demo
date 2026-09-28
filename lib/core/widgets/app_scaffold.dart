@@ -9,7 +9,9 @@ import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/features/employee/donor/presentation/pages/add_donor_page.dart';
+import 'package:surabhi/features/preacher/donor_care/presentation/pages/donor_care_page.dart';
 import 'package:surabhi/features/preacher/enrolled_donors/presentation/pages/my_enrolled_donors_page.dart';
+import 'package:surabhi/features/shared/festival/presentation/pages/festivals_page.dart';
 import 'package:surabhi/features/preacher/payment_link/presentation/pages/send_payment_link_page.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/donations_list_page.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/record_donation_page.dart';
@@ -295,6 +297,7 @@ class _RoleAwareDrawer extends StatelessWidget {
               'Donations Report',
               const DonationsListPage(title: 'Donations Report', color: employeeColor),
             ),
+            _pageTile(context, Icons.celebration_outlined, 'Festivals', const FestivalsPage()),
           ];
         }
       case 'preacher':
@@ -317,8 +320,10 @@ class _RoleAwareDrawer extends StatelessWidget {
               context,
               Icons.receipt_long,
               'Make Receipt',
-              const RecordDonationPage(title: 'Make Receipt', color: preacherColor),
+              const RecordDonationPage(title: 'Make Receipt', color: preacherColor, enrolledByFilter: kCurrentPreacherCode),
             ),
+            _pageTile(context, Icons.favorite_outline, 'Donor Care', const DonorCarePage()),
+            _pageTile(context, Icons.celebration_outlined, 'Festivals', const FestivalsPage(preacherCode: kCurrentPreacherCode)),
             _pageTile(context, Icons.groups, 'My Enrolled Donors', const MyEnrolledDonorsPage()),
             _pageTile(context, Icons.link, 'Send Payment Link', const SendPaymentLinkPage()),
           ];

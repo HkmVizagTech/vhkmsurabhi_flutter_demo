@@ -5,52 +5,74 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Common colors - sampled directly from the real app's own bundled
-  // artwork (app icon border + welcome screen banner box), not guessed.
-  static const Color primaryColor = Color(0xFF0E3F69); // Navy
-  static const Color secondaryColor = Color(0xFFC99A3D); // Gold
-  static const Color accentColor = Color(0xFFE5BD6E); // Light gold accent
+  // Brand palette - taken from the Vaikuntham donor app
+  // (hare_krishna_community_app lib/services/theme.dart) so both apps read
+  // as one family: gold primary, golden accent, dark ink text, cream
+  // surfaces and a deep-red highlight.
+  static const Color gold = Color(0xFFB8860B); // Vaikuntham primaryColor / themeBrown
+  static const Color golden = Color(0xFFC9A227); // goldenColor
+  static const Color goldenDark = Color(0xFFA9821F); // goldenColor2
+  static const Color ink = Color(0xFF101828); // themeDarkBlue
+  static const Color cream = Color(0xFFF4ECC8); // themeLightCream
+  static const Color beige = Color(0xFFF2E6B9); // themeBeige
+  static const Color creamLight = Color(0xFFFAF6E6); // bg gradient end
+  static const Color creamDeep = Color(0xFFF2E6B8); // bg gradient start
+  static const Color deepRed = Color(0xFF7C0B0B); // themeDeepRed
+  static const Color vaikunthamBlue = Color(0xFF1A398C); // blueColor
+  static const Color vaikunthamBrown = Color(0xFFB5451E); // brownColor
+
+  static const Color primaryColor = gold;
+  static const Color secondaryColor = golden;
+  static const Color accentColor = deepRed;
   static const Color onPrimary = Colors.white;
   static const Color onSecondary = Colors.white;
-  static const Color onAccent = Colors.black;
-  static const Color errorColor = Color(0xFFD32F2F);
-  static const Color successColor = Color(0xFF388E3C);
-  static const Color warningColor = Color(0xFFFBC02D);
-  static const Color infoColor = Color(0xFF1976D2);
+  static const Color onAccent = Colors.white;
+  static const Color errorColor = Color(0xFFC62828);
+  static const Color successColor = Color(0xFF2E7D32);
+  static const Color warningColor = Color(0xFFB7791F);
+  static const Color infoColor = vaikunthamBlue;
 
-  // Role-specific colors
-  static const Color adminColor = Color(0xFFD32F2F); // Red
-  static const Color employeeColor = Color(0xFF1976D2); // Blue
-  static const Color preacherColor = Color(0xFFFF9800); // Orange
-  static const Color approverColor = Color(0xFF388E3C); // Green
-  static const Color volunteerColor = Color(0xFF7B1FA2); // Purple
-  static const Color defaultRoleColor = Color(0xFF757575); // Grey
+  // Role accents, kept inside the same warm family
+  static const Color adminColor = deepRed;
+  static const Color employeeColor = vaikunthamBlue;
+  static const Color preacherColor = gold;
+  static const Color approverColor = Color(0xFF2E7D32);
+  static const Color volunteerColor = vaikunthamBrown;
+  static const Color defaultRoleColor = Color(0xFF6B7280);
 
   // Security/Status colors
-  static const Color securityEnabledColor = Color(0xFF388E3C); // Green
-  static const Color securityDisabledColor = Color(0xFF757575); // Grey
+  static const Color securityEnabledColor = Color(0xFF2E7D32);
+  static const Color securityDisabledColor = Color(0xFF6B7280);
 
-  // Light Theme Colors
-  static const Color lightBackground = Color(0xFFF5F5F5);
-  static const Color lightOnBackground = Colors.black87;
+  // Light theme (default)
+  static const Color lightBackground = creamLight;
+  static const Color lightOnBackground = ink;
   static const Color lightSurface = Colors.white;
-  static const Color lightOnSurface = Colors.black87;
-  static const Color lightBorderColor = Color(0xFFBDBDBD); // grey[400]
-  static const Color lightFocusBorder = Color(0xFFC99A3D); // Gold
-  static const Color lightButton = Color(0xFF0E3F69); // Navy
+  static const Color lightOnSurface = ink;
+  static const Color lightBorderColor = Color(0xFFE6D9A8); // warm beige border
+  static const Color lightFocusBorder = gold;
+  static const Color lightButton = gold;
   static const Color lightOnButton = Colors.white;
-  static const Color lightTextColor = Color(0xFF333333);
+  static const Color lightTextColor = ink;
+  static const Color lightAppBar = cream;
 
-  // Dark Theme Colors
-  static const Color darkBackground = Color(0xFF121212);
+  // Dark theme (opt-in from Settings)
+  static const Color darkBackground = Color(0xFF14110A);
   static const Color darkOnBackground = Colors.white70;
-  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkSurface = Color(0xFF221D12);
   static const Color darkOnSurface = Colors.white70;
-  static const Color darkBorderColor = Color(0xFF424242); // grey[800]
-  static const Color darkFocusBorder = Color(0xFFE5BD6E); // Light gold
-  static const Color darkButton = Color(0xFFC99A3D); // Gold
+  static const Color darkBorderColor = Color(0xFF4A3F22);
+  static const Color darkFocusBorder = golden;
+  static const Color darkButton = golden;
   static const Color darkOnButton = Colors.black;
   static const Color darkTextColor = Colors.white;
+
+  // Cream page background, same as Vaikuntham's bgLightLinearGradient
+  static const LinearGradient creamGradient = LinearGradient(
+    colors: [creamDeep, creamLight],
+    begin: Alignment.topRight,
+    end: Alignment.bottomLeft,
+  );
 
   // Helper methods
   static Color getRoleColor(String role) {

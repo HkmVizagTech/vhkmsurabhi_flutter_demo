@@ -10,7 +10,8 @@ class TrustWiseChart extends StatelessWidget {
 
   const TrustWiseChart({super.key, required this.data, required this.accentColor});
 
-  static const _trustColors = {'HKMV': Color(0xFFFF9800), 'HKMI': Color(0xFF1976D2), 'TSC': Color(0xFF388E3C)};
+  // Vaikuntham palette: gold, blue, deep red
+  static const _trustColors = {'HKMV': Color(0xFFB8860B), 'HKMI': Color(0xFF1A398C), 'TSC': Color(0xFF7C0B0B)};
 
   @override
   Widget build(BuildContext context) {

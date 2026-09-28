@@ -1,6 +1,9 @@
 // lib/core/widgets/donation_list_tile.dart
 import 'package:flutter/material.dart';
+import 'package:surabhi/core/mock/donor_insights.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/amount_bars.dart';
 
 class DonationListTile extends StatelessWidget {
   final MockDonation donation;
@@ -59,13 +62,27 @@ class DonationListTile extends StatelessWidget {
             const SizedBox(height: 6),
             Text(donation.donorName, style: const TextStyle(fontSize: 14)),
             Text(
-              '${donation.trust} · ${donation.sevaCategory} · $dateStr',
+              '${donation.trust} · ${donation.sevaLabel} · $dateStr',
               style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                if (donation.festivalCode != null)
+                  StatusChip(label: donation.festivalCode!, color: AppColors.gold, icon: Icons.celebration),
+                StatusChip(
+                  label: DonationChannel.label(donation.channel),
+                  color: donation.channel == DonationChannel.dcc ? Colors.blueGrey : AppColors.vaikunthamBlue,
+                  icon: donation.channel == DonationChannel.dcc ? Icons.edit_note : Icons.public,
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             Row(
               children: [
-                Text('₹${donation.amount}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(inr(donation.amount), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const Spacer(),
                 if (trailingAction != null) trailingAction!,
               ],

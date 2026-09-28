@@ -6,7 +6,28 @@
 // every screen that uses this can be swapped to live data later without
 // changing its structure.
 
+import 'package:surabhi/core/mock/mock_festivals.dart';
+
 enum DonationStatus { pending, approved, cancelled }
+
+// Where a receipt came from - DCC's new Donation.Source (NULL = entered in DCC).
+class DonationChannel {
+  DonationChannel._();
+  static const String dcc = 'DCC';
+  static const String website = 'WEBSITE';
+  static const String vaikuntham = 'VAIKUNTHAM';
+
+  static String label(String channel) {
+    switch (channel) {
+      case website:
+        return 'Website';
+      case vaikuntham:
+        return 'Vaikuntham app';
+      default:
+        return 'Entered in DCC';
+    }
+  }
+}
 
 // Demo stand-in for "the logged-in preacher's devotee code". DCC ties a
 // donor to a preacher via Donor.EnrolledBy; since the dev-bypass user has
@@ -24,6 +45,7 @@ class MockDonor {
   final String? address;
   final String? pan;
   final bool isPatron;
+  final DateTime? dob;
 
   const MockDonor({
     required this.id,
@@ -35,6 +57,7 @@ class MockDonor {
     this.address,
     this.pan,
     this.isPatron = false,
+    this.dob,
   });
 }
 
@@ -115,6 +138,11 @@ class MockDonation {
   final String modeOfPayment;
   final DateTime date;
   final DonationStatus status;
+  // The single festival identifier this receipt is tagged with, if any
+  final String? festivalCode;
+  final String channel;
+  // Specific seva, e.g. "Abhishekam" for a festival seva
+  final String? sevaName;
 
   const MockDonation({
     required this.receiptNumber,
@@ -126,7 +154,12 @@ class MockDonation {
     required this.modeOfPayment,
     required this.date,
     required this.status,
+    this.festivalCode,
+    this.channel = DonationChannel.dcc,
+    this.sevaName,
   });
+
+  String get sevaLabel => sevaName == null ? sevaCategory : '$sevaCategory - $sevaName';
 
   MockDonation copyWith({DonationStatus? status}) {
     return MockDonation(
@@ -139,6 +172,9 @@ class MockDonation {
       modeOfPayment: modeOfPayment,
       date: date,
       status: status ?? this.status,
+      festivalCode: festivalCode,
+      channel: channel,
+      sevaName: sevaName,
     );
   }
 }
@@ -171,9 +207,11 @@ class MockData {
     SevaSubCategory(category: 'Annadanam', name: 'Sponsor a Week', code: 'ANN03', amount: 5001),
     SevaSubCategory(category: 'General Donation', name: 'Temple General Fund', code: 'GEN01'),
     SevaSubCategory(category: 'General Donation', name: 'Deity Seva', code: 'GEN02', amount: 1001),
-    SevaSubCategory(category: 'Festival Donations', name: 'Janmashtami', code: 'FES01'),
-    SevaSubCategory(category: 'Festival Donations', name: 'Rathayatra', code: 'FES02'),
-    SevaSubCategory(category: 'Festival Donations', name: 'Gaura Purnima', code: 'FES03'),
+    // DCC's real festival sub-categories (Festival Donations > ...)
+    SevaSubCategory(category: 'Festival Donations', name: 'Sri Krishna Janmashtami', code: 'SKJ'),
+    SevaSubCategory(category: 'Festival Donations', name: 'Sri Radhashtami', code: 'RADH'),
+    SevaSubCategory(category: 'Festival Donations', name: 'Deepotsava', code: 'DEEP'),
+    SevaSubCategory(category: 'Festival Donations', name: 'Sri Gaura Poornima', code: 'GAUR'),
     SevaSubCategory(category: 'Nitya Sevas', name: 'Tulasi Seva', code: 'NIT01', amount: 251),
     SevaSubCategory(category: 'Nitya Sevas', name: 'Guru Puja Sponsorship', code: 'NIT02', amount: 501),
     SevaSubCategory(category: 'Temple Construction', name: 'Brick Donation', code: 'CON01', amount: 1116),
@@ -186,52 +224,112 @@ class MockData {
   // Grounded in DCC's ModeOfPayment lookup table (exact spelling: "Cheque/DD").
   static const List<String> modesOfPayment = ['Cash', 'Card', 'Online', 'Cheque/DD', 'Others'];
 
+  // Demo "today". Generated history is relative to it so lapsed donors,
+  // birthdays and financial-year splits stay meaningful whenever the demo
+  // is opened.
+  static final DateTime today = _dateOnly(DateTime.now());
+
+  static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  // A date of birth whose next birthday is [daysAhead] days from today
+  static DateTime _dobInDays(int daysAhead, int age) {
+    final next = today.add(Duration(days: daysAhead));
+    return DateTime(next.year - age, next.month, next.day);
+  }
+
   static final List<MockDonor> donors = [
-    const MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com', address: '12-3-45, Dwaraka Nagar, Visakhapatnam', pan: 'ABCDE1234F', isPatron: true),
-    const MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com', address: '4-6-12, Governorpet, Vijayawada'),
-    const MockDonor(id: 'D1026', name: 'Suresh Babu Kotturi', mobile: '9866123003', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '9-1-23, MVP Colony, Visakhapatnam'),
-    const MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com', address: '3-2-8, Brodipet, Guntur', pan: 'BXYPR5678K', isPatron: true),
-    const MockDonor(id: 'D1028', name: 'Krishna Murthy Yalamanchili', mobile: '9866123005', city: 'Rajahmundry', enrolledByCode: 'JTMD', address: '7-11-2, Danavaipeta, Rajahmundry'),
-    const MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com', address: '15-8-9, Seethammadhara, Visakhapatnam', isPatron: true),
-    const MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD', address: '2-4-19, Suryaraopeta, Kakinada'),
-    const MockDonor(id: 'D1031', name: 'Sita Mahalakshmi Nallamothu', mobile: '9866123008', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '11-2-6, Pedagantyada, Visakhapatnam'),
+    MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com', address: '12-3-45, Dwaraka Nagar, Visakhapatnam', pan: 'ABCDE1234F', isPatron: true, dob: _dobInDays(3, 54)),
+    MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com', address: '4-6-12, Governorpet, Vijayawada', dob: _dobInDays(40, 47)),
+    MockDonor(id: 'D1026', name: 'Suresh Babu Kotturi', mobile: '9866123003', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '9-1-23, MVP Colony, Visakhapatnam', dob: _dobInDays(18, 61)),
+    MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com', address: '3-2-8, Brodipet, Guntur', pan: 'BXYPR5678K', isPatron: true),
+    MockDonor(id: 'D1028', name: 'Krishna Murthy Yalamanchili', mobile: '9866123005', city: 'Rajahmundry', enrolledByCode: 'JTMD', address: '7-11-2, Danavaipeta, Rajahmundry'),
+    MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com', address: '15-8-9, Seethammadhara, Visakhapatnam', isPatron: true, dob: _dobInDays(0, 38)),
+    MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD', address: '2-4-19, Suryaraopeta, Kakinada'),
+    MockDonor(id: 'D1031', name: 'Sita Mahalakshmi Nallamothu', mobile: '9866123008', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '11-2-6, Pedagantyada, Visakhapatnam', dob: _dobInDays(120, 29)),
+    MockDonor(id: 'D1032', name: 'Hari Prasad Adapa', mobile: '9866123009', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'hari.adapa@example.com', address: '6-7-2, Madhurawada, Visakhapatnam', dob: _dobInDays(11, 44)),
+    MockDonor(id: 'D1033', name: 'Kalyani Devi Mandava', mobile: '9866123010', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '3-9-14, Gajuwaka, Visakhapatnam'),
   ];
+
+  // Donor-care scenarios for the demo preacher (ABRD):
+  static const Set<String> _neverDonated = {'D1031'}; // enrolled, no receipt yet
+  static const Set<String> _lapsed = {'D1026', 'D1033'}; // last gift over a year ago
 
   static final List<MockDonation> donations = _generateDonations();
 
   static List<MockDonation> _generateDonations() {
-    final now = DateTime(2026, 9, 17);
+    final now = today;
     final entries = <MockDonation>[];
     final modes = modesOfPayment;
     var counter = 1;
 
+    MockDonation make(MockDonor donor, String trust, String category, int amount, String mode, DateTime date,
+        DonationStatus status, {String? festivalCode, String? sevaName, String? channel}) {
+      final fy = date.month <= 3 ? date.year - 1 : date.year;
+      final receipt = MockDonation(
+        receiptNumber: '$trust|$fy|${counter.toString().padLeft(4, '0')}',
+        donorId: donor.id,
+        donorName: donor.name,
+        trust: trust,
+        sevaCategory: category,
+        amount: amount,
+        modeOfPayment: mode,
+        date: date,
+        status: status,
+        festivalCode: festivalCode,
+        sevaName: sevaName,
+        channel: channel ??
+            (mode == 'Online' ? (counter.isEven ? DonationChannel.website : DonationChannel.vaikuntham) : DonationChannel.dcc),
+      );
+      counter++;
+      return receipt;
+    }
+
     for (final donor in donors) {
+      if (_neverDonated.contains(donor.id)) continue;
+
+      if (_lapsed.contains(donor.id)) {
+        entries.add(make(donor, 'HKMV', 'Annadanam', 2501, 'Cash', now.subtract(const Duration(days: 430)), DonationStatus.approved));
+        entries.add(make(donor, 'HKMV', 'General Donation', 5001, 'Online', now.subtract(const Duration(days: 560)), DonationStatus.approved));
+        continue;
+      }
+
       final donationCount = 2 + (donor.id.hashCode.abs() % 4);
       for (var i = 0; i < donationCount; i++) {
         final trust = trusts[(donor.id.hashCode + i) % trusts.length];
-        final seva = sevaCategories[(donor.id.hashCode + i * 3) % sevaCategories.length];
-        final daysAgo = (i * 11 + donor.id.hashCode.abs()) % 150;
+        // General sevas here; festival receipts are added explicitly below
+        // so they always carry their FestivalCode.
+        final generalSevas = sevaCategories.where((s) => s != 'Festival Donations').toList();
+        final seva = generalSevas[(donor.id.hashCode + i * 3) % generalSevas.length];
+        final daysAgo = (i * 53 + donor.id.hashCode.abs()) % 420;
         final amount = 501 + ((donor.id.hashCode.abs() + i * 777) % 20) * 501;
         final status = i == 0
             ? DonationStatus.pending
             : (counter % 5 == 0 ? DonationStatus.cancelled : DonationStatus.approved);
-
-        entries.add(
-          MockDonation(
-            receiptNumber: '$trust|2026|${counter.toString().padLeft(4, '0')}',
-            donorId: donor.id,
-            donorName: donor.name,
-            trust: trust,
-            sevaCategory: seva,
-            amount: amount,
-            modeOfPayment: modes[counter % modes.length],
-            date: now.subtract(Duration(days: daysAgo)),
-            status: status,
-          ),
-        );
-        counter++;
+        entries.add(make(donor, trust, seva, amount, modes[counter % modes.length], now.subtract(Duration(days: daysAgo)), status));
       }
     }
+
+    // Festival receipts, each tagged with the single FestivalCode
+    final festivalGifts = <(String donorId, String festival, String seva, int amount, String mode, int day)>[
+      ('D1024', 'JANMASHTAMI-2026', 'Yajamana Seva', 25116, 'Cash', 3),
+      ('D1029', 'JANMASHTAMI-2026', 'Abhishekam', 1116, 'Online', 1),
+      ('D1032', 'JANMASHTAMI-2026', 'Mandapa Seva', 2516, 'Online', 2),
+      ('D1025', 'JANMASHTAMI-2026', 'Pushpalankara Seva', 5116, 'Cash', 4),
+      ('D1027', 'JANMASHTAMI-2026', 'Abhishekam', 1116, 'Online', 5),
+      ('D1030', 'JANMASHTAMI-2026', 'Mandapa Seva', 2516, 'Card', 6),
+      ('D1024', 'RADHASHTAMI-2026', 'Abhishekam', 1116, 'Online', 15),
+      ('D1029', 'RADHASHTAMI-2026', 'Pushpalankara Seva', 5116, 'Online', 17),
+      ('D1028', 'RADHASHTAMI-2026', 'Yajamana Seva', 25116, 'Cash', 18),
+    ];
+    for (final g in festivalGifts) {
+      final festival = festivalByCode(g.$2)!;
+      final donor = donors.firstWhere((d) => d.id == g.$1);
+      final date = DateTime(festival.festivalDate.year, festival.festivalDate.month, g.$6);
+      if (date.isAfter(now)) continue;
+      entries.add(make(donor, festival.trust, 'Festival Donations', g.$4, g.$5, date, DonationStatus.approved,
+          festivalCode: festival.festivalCode, sevaName: g.$3));
+    }
+
     entries.sort((a, b) => b.date.compareTo(a.date));
     return entries;
   }

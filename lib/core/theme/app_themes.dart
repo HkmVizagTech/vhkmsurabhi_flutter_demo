@@ -29,7 +29,10 @@ InputDecorationTheme _buildInputTheme({
   required Color fill,
   required Color enabledBorder,
   required Color focusedBorder,
+  // Label/hint text colour; the border colour is too pale to read on cream
+  Color? text,
 }) {
+  final labelColor = text ?? enabledBorder;
   return InputDecorationTheme(
     filled: true,
     fillColor: fill,
@@ -50,8 +53,9 @@ InputDecorationTheme _buildInputTheme({
       borderRadius: BorderRadius.circular(_kRadius),
       borderSide: const BorderSide(color: AppColors.errorColor, width: 2.0),
     ),
-    labelStyle: TextStyle(fontFamily: _kBodyFont, color: enabledBorder),
-    hintStyle: TextStyle(fontFamily: _kBodyFont, color: enabledBorder),
+    labelStyle: TextStyle(fontFamily: _kBodyFont, color: labelColor),
+    hintStyle: TextStyle(fontFamily: _kBodyFont, color: labelColor),
+    prefixIconColor: text ?? focusedBorder,
     contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
   );
 }
@@ -77,16 +81,20 @@ final ThemeData lightTheme = ThemeData(
 
   textTheme: _buildTextTheme(ThemeData.light().textTheme, AppColors.lightTextColor, AppColors.lightOnBackground),
 
+  // Light cream bar with dark-ink title and gold icons, as in Vaikuntham
   appBarTheme: const AppBarTheme(
-    backgroundColor: AppColors.primaryColor,
-    foregroundColor: AppColors.onPrimary,
+    backgroundColor: AppColors.lightAppBar,
+    foregroundColor: AppColors.ink,
     surfaceTintColor: Colors.transparent,
     elevation: 0,
-    scrolledUnderElevation: 2,
+    scrolledUnderElevation: 1,
+    shadowColor: AppColors.beige,
     centerTitle: false,
+    iconTheme: IconThemeData(color: AppColors.gold),
+    actionsIconTheme: IconThemeData(color: AppColors.gold),
     titleTextStyle: TextStyle(
       fontFamily: _kDisplayFont,
-      color: AppColors.onPrimary,
+      color: AppColors.ink,
       fontSize: 20,
       fontWeight: FontWeight.w700,
       letterSpacing: 0.1,
@@ -94,10 +102,22 @@ final ThemeData lightTheme = ThemeData(
   ),
 
   inputDecorationTheme: _buildInputTheme(
-    fill: AppColors.lightBackground,
+    fill: AppColors.lightSurface,
     enabledBorder: AppColors.lightBorderColor,
     focusedBorder: AppColors.lightFocusBorder,
+    text: const Color(0xFF7A6E52),
   ),
+
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    backgroundColor: AppColors.lightSurface,
+    selectedItemColor: AppColors.gold,
+    unselectedItemColor: Color(0xFF8A7F63),
+    elevation: 8,
+  ),
+
+  drawerTheme: const DrawerThemeData(backgroundColor: AppColors.creamLight),
+
+  progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.gold),
 
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
@@ -138,9 +158,9 @@ final ThemeData lightTheme = ThemeData(
   ),
 
   snackBarTheme: const SnackBarThemeData(
-    backgroundColor: AppColors.darkSurface,
-    contentTextStyle: TextStyle(fontFamily: _kBodyFont, color: AppColors.darkTextColor),
-    actionTextColor: AppColors.accentColor,
+    backgroundColor: AppColors.ink,
+    contentTextStyle: TextStyle(fontFamily: _kBodyFont, color: Colors.white),
+    actionTextColor: AppColors.golden,
     behavior: SnackBarBehavior.floating,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(_kRadius))),
   ),
@@ -149,16 +169,16 @@ final ThemeData lightTheme = ThemeData(
     color: AppColors.lightSurface,
     elevation: 0,
     surfaceTintColor: Colors.transparent,
-    shadowColor: Colors.black.withValues(alpha: 0.08),
+    shadowColor: AppColors.gold.withValues(alpha: 0.10),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(_kCardRadius),
-      side: BorderSide(color: AppColors.lightBorderColor.withValues(alpha: 0.4)),
+      side: BorderSide(color: AppColors.lightBorderColor.withValues(alpha: 0.7)),
     ),
     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
   ),
 
   chipTheme: ChipThemeData(
-    backgroundColor: AppColors.lightBackground,
+    backgroundColor: AppColors.cream,
     labelStyle: const TextStyle(fontFamily: _kBodyFont, fontWeight: FontWeight.w600),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_kRadius)),
     side: BorderSide.none,

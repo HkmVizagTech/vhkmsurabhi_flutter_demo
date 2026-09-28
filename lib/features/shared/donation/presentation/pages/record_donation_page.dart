@@ -1,20 +1,28 @@
 // lib/features/shared/donation/presentation/pages/record_donation_page.dart
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/core/mock/mock_festivals.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/receipt_number.dart';
+import 'package:surabhi/core/widgets/amount_bars.dart';
 import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/features/shared/donation/data/receipt_model.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/receipt_page.dart';
 
 /// Shared "record a donation" form. Used as Employee's "Record Donation"
-/// and Preacher's "Record Seva" (same underlying DCC workflow: add a
+/// and Preacher's "Make Receipt" (same underlying DCC workflow: add a
 /// donation for a donor with trust/seva/amount/mode of payment).
 class RecordDonationPage extends StatefulWidget {
   final String title;
   final Color color;
   final List<AppBottomNavItem>? bottomNavItems;
   final int bottomNavIndex;
+  // Preselects a donor, e.g. when opened from Donor 360
+  final MockDonor? initialDonor;
+  // When set, the donor picker only offers donors this devotee code
+  // enrolled - a preacher can't raise receipts for another preacher's donors.
+  final String? enrolledByFilter;
 
   const RecordDonationPage({
     super.key,
@@ -22,6 +30,8 @@ class RecordDonationPage extends StatefulWidget {
     required this.color,
     this.bottomNavItems,
     this.bottomNavIndex = 0,
+    this.initialDonor,
+    this.enrolledByFilter,
   });
 
   @override
@@ -40,8 +50,16 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
   String _modeOfPayment = MockData.modesOfPayment.first;
   bool _taxExemptionRequired = false;
 
+  // Festival receipt: the festival's single code + seva key decide the DCC
+  // seva, exactly like DCC's addDonation(festivalCode, sevaKey).
+  MockFestival? _festival;
+  MockFestivalSeva? _festivalSeva;
+
   bool _submitted = false;
   Receipt? _receipt;
+
+  List<MockFestival> get _collectingFestivals =>
+      mockFestivals.where((f) => f.isCollectingOn(MockData.today)).toList();
 
   @override
   void initState() {
@@ -49,6 +67,38 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
     if (_sevaSubCategory.amount != null) {
       _amountController.text = _sevaSubCategory.amount.toString();
     }
+    if (widget.initialDonor != null) {
+      _selectedDonor = widget.initialDonor;
+      _taxExemptionRequired = widget.initialDonor!.pan != null;
+    }
+  }
+
+  void _onFestivalChanged(MockFestival? festival) {
+    setState(() {
+      _festival = festival;
+      _festivalSeva = festival?.sevas.first;
+      if (festival != null) {
+        _trust = festival.trust;
+        _sevaCategory = 'Festival Donations';
+        _sevaSubCategory = MockData.subCategoriesFor(_sevaCategory).firstWhere(
+              (s) => s.name == festival.dccSubCategory,
+              orElse: () => MockData.subCategoriesFor(_sevaCategory).first,
+            );
+        _applyFestivalAmount();
+      }
+    });
+  }
+
+  void _onFestivalSevaChanged(MockFestivalSeva? seva) {
+    setState(() {
+      _festivalSeva = seva;
+      _applyFestivalAmount();
+    });
+  }
+
+  void _applyFestivalAmount() {
+    final amount = _festivalSeva?.suggestedAmount;
+    if (amount != null) _amountController.text = amount.toString();
   }
 
   @override
@@ -115,7 +165,11 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         bank: '',
         enrolledBy: donor.enrolledByCode,
         cdc: '',
-        sevaName: '$_sevaCategory - ${_sevaSubCategory.name}',
+        // DCC names festival sevas "<category> - <seva code>", e.g.
+        // "Festival Donations - Abhishekam" (see DonorNDonationDAL.AddDonation)
+        sevaName: _festivalSeva != null
+            ? '$_sevaCategory - ${_festivalSeva!.name}'
+            : '$_sevaCategory - ${_sevaSubCategory.name}',
         isReceiptAccounted: false,
         isReceiptCancelled: false,
         isTaxExemptionRequired: _taxExemptionRequired,
@@ -150,29 +204,82 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
               child: Text(_selectedDonor == null ? 'Tap to select a donor' : '${_selectedDonor!.name} (${_selectedDonor!.id})'),
             ),
           ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _trust,
-            decoration: const InputDecoration(labelText: 'Trust (Account Type) *', prefixIcon: Icon(Icons.account_balance)),
-            items: MockData.trusts.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-            onChanged: (v) => setState(() => _trust = v ?? _trust),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _sevaCategory,
-            decoration: const InputDecoration(labelText: 'Seva Category *', prefixIcon: Icon(Icons.volunteer_activism)),
-            items: MockData.sevaCategories.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-            onChanged: (v) => _onCategoryChanged(v ?? _sevaCategory),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<SevaSubCategory>(
-            initialValue: _sevaSubCategory,
-            decoration: const InputDecoration(labelText: 'Seva Sub Category *', prefixIcon: Icon(Icons.category_outlined)),
-            items: MockData.subCategoriesFor(_sevaCategory)
-                .map((s) => DropdownMenuItem(value: s, child: Text(s.amount != null ? '${s.name} (₹${s.amount})' : s.name)))
-                .toList(),
-            onChanged: (v) => _onSubCategoryChanged(v ?? _sevaSubCategory),
-          ),
+          if (_collectingFestivals.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            DropdownButtonFormField<MockFestival?>(
+              key: ValueKey('festival-${_festival?.festivalCode}'),
+              initialValue: _festival,
+              decoration: const InputDecoration(
+                labelText: 'Festival (optional)',
+                helperText: 'Tags the receipt with the festival code used by DCC, the website and the app',
+                helperMaxLines: 2,
+                prefixIcon: Icon(Icons.celebration_outlined),
+              ),
+              items: [
+                const DropdownMenuItem<MockFestival?>(value: null, child: Text('Not a festival seva')),
+                ..._collectingFestivals.map((f) => DropdownMenuItem<MockFestival?>(value: f, child: Text(f.name))),
+              ],
+              onChanged: _onFestivalChanged,
+            ),
+          ],
+          if (_festival != null) ...[
+            const SizedBox(height: 16),
+            DropdownButtonFormField<MockFestivalSeva>(
+              key: ValueKey('seva-${_festival!.festivalCode}'),
+              initialValue: _festivalSeva,
+              decoration: const InputDecoration(labelText: 'Festival Seva *', prefixIcon: Icon(Icons.volunteer_activism)),
+              items: _festival!.sevas
+                  .map((s) => DropdownMenuItem(
+                        value: s,
+                        child: Text(s.suggestedAmount != null ? '${s.name} (₹${s.suggestedAmount})' : s.name),
+                      ))
+                  .toList(),
+              onChanged: _onFestivalSevaChanged,
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: AppColors.cream, borderRadius: BorderRadius.circular(12)),
+              child: Row(
+                children: [
+                  StatusChip(label: _festival!.festivalCode, color: AppColors.gold, icon: Icons.tag),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$_trust · $_sevaCategory › ${_sevaSubCategory.name} › ${_festivalSeva?.name ?? ''}',
+                      style: const TextStyle(fontSize: 12, color: AppColors.ink),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _trust,
+              decoration: const InputDecoration(labelText: 'Trust (Account Type) *', prefixIcon: Icon(Icons.account_balance)),
+              items: MockData.trusts.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+              onChanged: (v) => setState(() => _trust = v ?? _trust),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              key: ValueKey('category-$_sevaCategory'),
+              initialValue: _sevaCategory,
+              decoration: const InputDecoration(labelText: 'Seva Category *', prefixIcon: Icon(Icons.volunteer_activism)),
+              items: MockData.sevaCategories.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              onChanged: (v) => _onCategoryChanged(v ?? _sevaCategory),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<SevaSubCategory>(
+              key: ValueKey('sub-$_sevaCategory'),
+              initialValue: _sevaSubCategory,
+              decoration: const InputDecoration(labelText: 'Seva Sub Category *', prefixIcon: Icon(Icons.category_outlined)),
+              items: MockData.subCategoriesFor(_sevaCategory)
+                  .map((s) => DropdownMenuItem(value: s, child: Text(s.amount != null ? '${s.name} (₹${s.amount})' : s.name)))
+                  .toList(),
+              onChanged: (v) => _onSubCategoryChanged(v ?? _sevaSubCategory),
+            ),
+          ],
           const SizedBox(height: 16),
           TextFormField(
             controller: _amountController,
@@ -238,7 +345,7 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
           initialChildSize: 0.85,
           expand: false,
           builder: (context, scrollController) {
-            return _DonorPickerSheet(scrollController: scrollController);
+            return _DonorPickerSheet(scrollController: scrollController, enrolledByFilter: widget.enrolledByFilter);
           },
         );
       },
@@ -265,6 +372,10 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         Text('₹${receipt.amount} from ${receipt.donorName}'),
         const SizedBox(height: 4),
         Text(receipt.sevaName, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+        if (_festival != null) ...[
+          const SizedBox(height: 8),
+          StatusChip(label: 'Tagged ${_festival!.festivalCode}', color: AppColors.gold, icon: Icons.celebration),
+        ],
         const SizedBox(height: 24),
         ElevatedButton.icon(
           onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReceiptPage(receipt: receipt, color: widget.color))),
@@ -281,8 +392,9 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
 
 class _DonorPickerSheet extends StatefulWidget {
   final ScrollController scrollController;
+  final String? enrolledByFilter;
 
-  const _DonorPickerSheet({required this.scrollController});
+  const _DonorPickerSheet({required this.scrollController, this.enrolledByFilter});
 
   @override
   State<_DonorPickerSheet> createState() => _DonorPickerSheetState();
@@ -290,7 +402,12 @@ class _DonorPickerSheet extends StatefulWidget {
 
 class _DonorPickerSheetState extends State<_DonorPickerSheet> {
   final _searchController = TextEditingController();
-  List<MockDonor> _results = MockData.donors;
+  late List<MockDonor> _results = _scoped(MockData.donors);
+
+  List<MockDonor> _scoped(List<MockDonor> donors) {
+    final code = widget.enrolledByFilter;
+    return code == null ? donors : donors.where((d) => d.enrolledByCode == code).toList();
+  }
 
   @override
   void dispose() {
@@ -299,7 +416,7 @@ class _DonorPickerSheetState extends State<_DonorPickerSheet> {
   }
 
   void _onSearchChanged(String query) {
-    setState(() => _results = MockData.searchDonors(query));
+    setState(() => _results = _scoped(MockData.searchDonors(query)));
   }
 
   @override

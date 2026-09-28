@@ -2,8 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/mock/donor_insights.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/features/preacher/donor_care/presentation/pages/donor_care_page.dart';
+import 'package:surabhi/features/shared/festival/presentation/pages/festivals_page.dart';
 import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/dashboard_action_card.dart';
@@ -35,6 +38,7 @@ List<AppBottomNavItem> _preacherBottomNav(BuildContext context, int current) {
         RecordDonationPage(
           title: 'Make Receipt',
           color: color,
+          enrolledByFilter: kCurrentPreacherCode,
           bottomNavItems: _preacherBottomNav(context, 1),
           bottomNavIndex: 1,
         ),
@@ -81,6 +85,8 @@ class PreacherDashboard extends StatelessWidget {
             icon: Icons.school,
             color: color,
           ),
+          const SizedBox(height: 16),
+          const _FollowUpsCard(),
           const SizedBox(height: 20),
           const _SectionTitle('My Impact', color: color),
           const SizedBox(height: 10),
@@ -161,9 +167,26 @@ class PreacherDashboard extends StatelessWidget {
                   RecordDonationPage(
                     title: 'Make Receipt',
                     color: color,
+                    enrolledByFilter: kCurrentPreacherCode,
                     bottomNavItems: _preacherBottomNav(context, 1),
                     bottomNavIndex: 1,
                   ),
+                ),
+              ),
+              DashboardActionCard(
+                icon: Icons.favorite_outline,
+                title: 'Donor Care',
+                subtitle: 'Lapsed, birthdays & follow-ups',
+                color: color,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DonorCarePage())),
+              ),
+              DashboardActionCard(
+                icon: Icons.celebration_outlined,
+                title: 'Festivals',
+                subtitle: 'Collections by festival code',
+                color: color,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const FestivalsPage(preacherCode: kCurrentPreacherCode)),
                 ),
               ),
               DashboardActionCard(
@@ -196,6 +219,65 @@ class PreacherDashboard extends StatelessWidget {
     return '$amount';
   }
 
+}
+
+// "Who should I call today?" - counts from the same rules as Donor Care,
+// each opening that tab's list.
+class _FollowUpsCard extends StatelessWidget {
+  const _FollowUpsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final all = DonorInsights.forPreacher(kCurrentPreacherCode);
+    final lapsed = all.where((i) => i.status == CareStatus.lapsed).length;
+    final birthdays = all.where((i) => i.daysToBirthday != null && i.daysToBirthday! <= 7).length;
+    final never = all.where((i) => i.status == CareStatus.never).length;
+
+    Widget item(String count, String label, IconData icon, Color color) {
+      return Expanded(
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 4),
+            Text(count, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: AppColors.ink)),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DonorCarePage())),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.favorite, color: AppColors.deepRed, size: 18),
+                  SizedBox(width: 6),
+                  Expanded(child: Text('Today’s follow-ups', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink))),
+                  Text('Open Donor Care', style: TextStyle(fontSize: 12, color: AppColors.gold, fontWeight: FontWeight.w700)),
+                  Icon(Icons.chevron_right, color: AppColors.gold, size: 18),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  item('$birthdays', 'Birthdays\nthis week', Icons.cake, AppColors.deepRed),
+                  item('$lapsed', 'Lapsed\ndonors', Icons.hourglass_bottom, AppColors.warningColor),
+                  item('$never', 'Enrolled,\nnever gave', Icons.person_outline, AppColors.vaikunthamBlue),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _SectionTitle extends StatelessWidget {
