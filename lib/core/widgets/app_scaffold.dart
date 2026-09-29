@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/mock/demo_identity.dart';
+import 'package:surabhi/core/mock/mock_approvals.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/features/employee/donor/presentation/pages/add_donor_page.dart';
 import 'package:surabhi/features/preacher/donor_care/presentation/pages/donor_care_page.dart';
@@ -15,7 +17,13 @@ import 'package:surabhi/features/shared/festival/presentation/pages/festivals_pa
 import 'package:surabhi/features/preacher/payment_link/presentation/pages/send_payment_link_page.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/donations_list_page.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/record_donation_page.dart';
+import 'package:surabhi/features/shared/approvals/presentation/pages/approval_inbox_page.dart';
+import 'package:surabhi/features/shared/approvals/presentation/pages/approval_settings_page.dart';
+import 'package:surabhi/features/shared/approvals/presentation/pages/my_requests_page.dart';
 import 'package:surabhi/features/shared/donor/presentation/pages/donor_lookup_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/my_follow_ups_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/patron_lifecycle_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/segments_page.dart';
 import 'package:surabhi/features/volunteer/qr/presentation/pages/qr_scanner_page.dart';
 
 class AppScaffold extends StatelessWidget {
@@ -280,6 +288,7 @@ class _RoleAwareDrawer extends StatelessWidget {
               context.push('/admin/create-user');
             },
           ),
+          ..._drmAndApprovalTiles(context, 'admin', AppColors.adminColor),
         ];
       case 'employee':
         {
@@ -300,6 +309,7 @@ class _RoleAwareDrawer extends StatelessWidget {
               const DonationsListPage(title: 'Donations Report', color: employeeColor),
             ),
             _pageTile(context, Icons.celebration_outlined, 'Festivals', const FestivalsPage()),
+            ..._drmAndApprovalTiles(context, 'employee', employeeColor),
           ];
         }
       case 'preacher':
@@ -328,6 +338,7 @@ class _RoleAwareDrawer extends StatelessWidget {
             _pageTile(context, Icons.celebration_outlined, 'Festivals', const FestivalsPage(preacherCode: kCurrentPreacherCode)),
             _pageTile(context, Icons.groups, 'My Enrolled Donors', const MyEnrolledDonorsPage()),
             _pageTile(context, Icons.link, 'Send Payment Link', const SendPaymentLinkPage()),
+            ..._drmAndApprovalTiles(context, 'preacher', preacherColor),
           ];
         }
       case 'approver':
@@ -355,6 +366,7 @@ class _RoleAwareDrawer extends StatelessWidget {
                 statusFilter: DonationStatus.approved,
               ),
             ),
+            ..._drmAndApprovalTiles(context, 'approver', approverColor),
           ];
         }
       case 'volunteer':
@@ -370,10 +382,70 @@ class _RoleAwareDrawer extends StatelessWidget {
     }
   }
 
-  ListTile _pageTile(BuildContext context, IconData icon, String label, Widget page) {
+  // Hierarchy approvals + DRM entries, per role:
+  //  admin    - inbox (acts at any level), settings, segments, patrons, follow-ups
+  //  employee - my requests, inbox (view only), segments, patrons, follow-ups
+  //  preacher - my follow-ups, my requests, segments + patrons (own donors)
+  //  approver - inbox, segments, patrons
+  List<Widget> _drmAndApprovalTiles(BuildContext context, String role, Color color) {
+    final who = DemoIdentity.forRole(role);
+    final pending = ApprovalStore.instance.pendingFor(who).length;
+    final inbox = _pageTile(
+      context,
+      Icons.approval,
+      'Approval Inbox',
+      ApprovalInboxPage(color: color),
+      trailing: pending == 0 || !(who.isAdmin || who.isApprover) ? null : _countBadge(pending),
+    );
+    final myRequests = _pageTile(context, Icons.outbox_outlined, 'My Requests', MyRequestsPage(color: color));
+    final scope = who.preacherCode;
+    final segments = _pageTile(context, Icons.filter_alt_outlined, 'Segments', SegmentsPage(preacherCode: scope, color: color));
+    final patrons = _pageTile(
+      context,
+      Icons.workspace_premium_outlined,
+      'Patron Lifecycle',
+      PatronLifecyclePage(preacherCode: scope, color: color),
+    );
+    final followUps = _pageTile(
+      context,
+      Icons.task_alt,
+      scope == null ? 'Follow-ups' : 'My Follow-ups',
+      MyFollowUpsPage(preacherCode: scope, color: color),
+    );
+    switch (role) {
+      case 'admin':
+        return [
+          const Divider(),
+          inbox,
+          _pageTile(context, Icons.tune, 'Approval Settings', const ApprovalSettingsPage()),
+          segments,
+          patrons,
+          followUps,
+        ];
+      case 'employee':
+        return [const Divider(), myRequests, inbox, segments, patrons, followUps];
+      case 'preacher':
+        return [const Divider(), followUps, myRequests, segments, patrons];
+      case 'approver':
+        return [const Divider(), inbox, segments, patrons];
+      default:
+        return [];
+    }
+  }
+
+  Widget _countBadge(int n) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(color: AppColors.deepRed, borderRadius: BorderRadius.circular(12)),
+      child: Text('$n', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  ListTile _pageTile(BuildContext context, IconData icon, String label, Widget page, {Widget? trailing}) {
     return ListTile(
       leading: Icon(icon),
       title: Text(label),
+      trailing: trailing,
       onTap: () {
         Navigator.of(context).pop();
         Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));

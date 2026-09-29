@@ -1,5 +1,8 @@
 // lib/features/shared/donation/presentation/pages/record_donation_page.dart
 import 'package:flutter/material.dart';
+import 'package:surabhi/core/mock/demo_identity.dart';
+import 'package:surabhi/core/mock/donor_insights.dart';
+import 'package:surabhi/core/mock/mock_approvals.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
 import 'package:surabhi/core/mock/mock_festivals.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
@@ -7,6 +10,8 @@ import 'package:surabhi/core/utils/receipt_number.dart';
 import 'package:surabhi/core/widgets/amount_bars.dart';
 import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
+import 'package:surabhi/features/shared/approvals/presentation/pages/approval_request_detail_page.dart';
+import 'package:surabhi/features/shared/approvals/presentation/widgets/step_chain.dart';
 import 'package:surabhi/features/shared/donation/data/receipt_model.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/receipt_page.dart';
 
@@ -57,6 +62,8 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
 
   bool _submitted = false;
   Receipt? _receipt;
+  // Set instead of _receipt when the HIGH_VALUE_RECEIPT rule held it back
+  ApprovalRequest? _approvalRequest;
 
   List<MockFestival> get _collectingFestivals =>
       mockFestivals.where((f) => f.isCollectingOn(MockData.today)).toList();
@@ -140,6 +147,57 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
     // stays blank (this form only captures a reference number for Online).
     final paymentRefNo = _modeOfPayment == 'Online' ? _referenceNumberController.text.trim() : '';
     final paymentDate = _modeOfPayment == 'Online' ? now : null;
+    final amount = num.parse(_amountController.text).toInt();
+    final isCash = _modeOfPayment == 'Cash';
+
+    // DCC's HIGH_VALUE_RECEIPT rule: at/above the threshold (or the lower
+    // cash threshold) the receipt is held until the approval chain clears.
+    final store = ApprovalStore.instance;
+    if (store.isApprovalRequired(ApprovalActionType.highValueReceipt, amount: amount, isCash: isCash)) {
+      final rule = store.rule(ApprovalActionType.highValueReceipt);
+      final overAmount = rule.thresholdAmount != null && amount >= rule.thresholdAmount!;
+      final seva = _festivalSeva != null ? _festivalSeva!.name : _sevaSubCategory.name;
+      final req = store.submitOrApply(
+        actionType: ApprovalActionType.highValueReceipt,
+        title: 'Receipt ${inr(amount)}${isCash ? ' in Cash' : ' by $_modeOfPayment'}',
+        donorId: donor.id,
+        donorName: donor.name,
+        amount: amount,
+        isCash: isCash,
+        reason: overAmount ? 'Amount at or above ${inr(rule.thresholdAmount!)}' : 'Cash at or above ${inr(rule.cashThresholdAmount!)}',
+        requestedBy: DemoIdentity.of(context).name,
+        details: [
+          ('Trust', _trust),
+          ('Seva', '$_sevaCategory - $seva'),
+          ('Mode', _modeOfPayment),
+          if (paymentRefNo.isNotEmpty) ('UTR / reference', paymentRefNo),
+          if (_festival != null) ('Festival', _festival!.festivalCode),
+          ('Tax exemption (80G)', _taxExemptionRequired ? 'Yes' : 'No'),
+        ],
+        pendingReceipt: MockDonation(
+          receiptNumber: buildReceiptNumber(trust: _trust, date: now, sequence: now.millisecondsSinceEpoch % 10000),
+          donorId: donor.id,
+          donorName: donor.name,
+          trust: _trust,
+          sevaCategory: _sevaCategory,
+          sevaName: seva,
+          amount: amount,
+          modeOfPayment: _modeOfPayment,
+          date: now,
+          status: DonationStatus.pending,
+          festivalCode: _festival?.festivalCode,
+        ),
+      );
+      // Every step skipped = approved at once; fall through to the receipt
+      if (req != null && req.isPending) {
+        setState(() {
+          _approvalRequest = req;
+          _submitted = true;
+        });
+        return;
+      }
+    }
+
     setState(() {
       _receipt = Receipt(
         // DCC's real ReceiptTracker sequence lives server-side; this is a demo stand-in.
@@ -158,7 +216,7 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         // tax-exemption flag is set for this donation - not just because
         // the donor happens to have one on file.
         pan: _taxExemptionRequired ? donor.pan : '',
-        amount: num.parse(_amountController.text).toInt(),
+        amount: amount,
         modeOfPayment: _modeOfPayment,
         paymentRefNo: paymentRefNo,
         paymentDate: paymentDate,
@@ -186,7 +244,11 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
       bottomNavIndex: widget.bottomNavIndex,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: _submitted ? _buildSuccess() : _buildForm(),
+        child: !_submitted
+            ? _buildForm()
+            : _approvalRequest != null
+                ? _buildSentForApproval()
+                : _buildSuccess(),
       ),
     );
   }
@@ -356,6 +418,63 @@ class _RecordDonationPageState extends State<RecordDonationPage> {
         _taxExemptionRequired = donor.pan != null;
       });
     }
+  }
+
+  // High-value / cash receipt held for approval: request id + live chain
+  Widget _buildSentForApproval() {
+    return ListenableBuilder(
+      listenable: ApprovalStore.instance,
+      builder: (context, _) {
+        final req = _approvalRequest!;
+        final approved = req.status == RequestStatus.approved;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 24),
+            Icon(approved ? Icons.check_circle : Icons.hourglass_top, color: approved ? Colors.green.shade600 : AppColors.warningColor, size: 72),
+            const SizedBox(height: 16),
+            Text(
+              approved ? 'Approved - receipt issued' : 'Sent for approval',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Request ${req.id}', textAlign: TextAlign.center, style: TextStyle(color: widget.color, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('${inr(req.amount ?? 0)} from ${req.donorName}', textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Text(req.reason, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: AppColors.cream, borderRadius: BorderRadius.circular(14)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    approved ? (req.outcome ?? 'Receipt issued') : 'The receipt is issued once these approve:',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+                  ),
+                  const SizedBox(height: 8),
+                  StepChain(steps: req.steps),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ApprovalRequestDetailPage(requestId: req.id, color: widget.color)),
+              ),
+              style: ElevatedButton.styleFrom(backgroundColor: widget.color, minimumSize: const Size.fromHeight(50)),
+              icon: const Icon(Icons.approval, color: Colors.white),
+              label: const Text('View request', style: TextStyle(color: Colors.white)),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Done')),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildSuccess() {

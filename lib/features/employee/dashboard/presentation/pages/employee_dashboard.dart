@@ -9,7 +9,11 @@ import 'package:surabhi/core/widgets/dashboard_action_card.dart';
 import 'package:surabhi/core/widgets/dashboard_header.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/employee/donor/presentation/pages/add_donor_page.dart';
+import 'package:surabhi/features/shared/approvals/presentation/pages/my_requests_page.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/donations_list_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/my_follow_ups_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/patron_lifecycle_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/segments_page.dart';
 import 'package:surabhi/features/shared/donation/presentation/pages/record_donation_page.dart';
 import 'package:surabhi/features/shared/donor/presentation/pages/donor_lookup_page.dart';
 
@@ -116,6 +120,35 @@ class EmployeeDashboard extends StatelessWidget {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const DonationsListPage(title: 'Donations Report', color: color)),
                 ),
+              ),
+              // Approval Inbox (view only) is in the drawer
+              DashboardActionCard(
+                icon: Icons.outbox_outlined,
+                title: 'My Requests',
+                subtitle: 'Cancellations, changes & approvals',
+                color: color,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyRequestsPage(color: color))),
+              ),
+              DashboardActionCard(
+                icon: Icons.task_alt,
+                title: 'Follow-ups',
+                subtitle: 'Donor follow-up tasks',
+                color: color,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyFollowUpsPage(color: color))),
+              ),
+              DashboardActionCard(
+                icon: Icons.filter_alt_outlined,
+                title: 'Segments',
+                subtitle: 'Tiers, tags & bulk follow-ups',
+                color: color,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SegmentsPage(color: color))),
+              ),
+              DashboardActionCard(
+                icon: Icons.workspace_premium_outlined,
+                title: 'Patron Lifecycle',
+                subtitle: 'Instalments, pujas & publications',
+                color: color,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PatronLifecyclePage(color: color))),
               ),
             ],
           ),

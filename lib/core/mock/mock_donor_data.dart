@@ -59,6 +59,23 @@ class MockDonor {
     this.isPatron = false,
     this.dob,
   });
+
+  /// Used when an approved DONOR_CHANGE / PATRON_ENROL request is applied.
+  /// Mobile, enrolment and DOB are not editable from the app.
+  MockDonor copyWith({String? name, String? email, String? city, String? address, String? pan, bool? isPatron}) {
+    return MockDonor(
+      id: id,
+      name: name ?? this.name,
+      mobile: mobile,
+      city: city ?? this.city,
+      enrolledByCode: enrolledByCode,
+      email: email ?? this.email,
+      address: address ?? this.address,
+      pan: pan ?? this.pan,
+      isPatron: isPatron ?? this.isPatron,
+      dob: dob,
+    );
+  }
 }
 
 /// Trust (DCC's AccountType) letterhead details used on the donation
@@ -239,14 +256,14 @@ class MockData {
 
   static final List<MockDonor> donors = [
     MockDonor(id: 'D1024', name: 'Ramesh Chandra Rao', mobile: '9866123001', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'ramesh.rao@example.com', address: '12-3-45, Dwaraka Nagar, Visakhapatnam', pan: 'ABCDE1234F', isPatron: true, dob: _dobInDays(3, 54)),
-    MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com', address: '4-6-12, Governorpet, Vijayawada', dob: _dobInDays(40, 47)),
+    MockDonor(id: 'D1025', name: 'Lakshmi Devi Pusapati', mobile: '9866123002', city: 'Vijayawada', enrolledByCode: 'JTMD', email: 'lakshmi.devi@example.com', address: '4-6-12, Governorpet, Vijayawada', isPatron: true, dob: _dobInDays(40, 47)),
     MockDonor(id: 'D1026', name: 'Suresh Babu Kotturi', mobile: '9866123003', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '9-1-23, MVP Colony, Visakhapatnam', dob: _dobInDays(18, 61)),
     MockDonor(id: 'D1027', name: 'Anitha Reddy Vempati', mobile: '9866123004', city: 'Guntur', enrolledByCode: 'SRND', email: 'anitha.reddy@example.com', address: '3-2-8, Brodipet, Guntur', pan: 'BXYPR5678K', isPatron: true),
     MockDonor(id: 'D1028', name: 'Krishna Murthy Yalamanchili', mobile: '9866123005', city: 'Rajahmundry', enrolledByCode: 'JTMD', address: '7-11-2, Danavaipeta, Rajahmundry'),
     MockDonor(id: 'D1029', name: 'Padma Priya Chekuri', mobile: '9866123006', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'padma.priya@example.com', address: '15-8-9, Seethammadhara, Visakhapatnam', isPatron: true, dob: _dobInDays(0, 38)),
-    MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD', address: '2-4-19, Suryaraopeta, Kakinada'),
+    MockDonor(id: 'D1030', name: 'Venkata Ramana Gubbala', mobile: '9866123007', city: 'Kakinada', enrolledByCode: 'SYMD', address: '2-4-19, Suryaraopeta, Kakinada', isPatron: true),
     MockDonor(id: 'D1031', name: 'Sita Mahalakshmi Nallamothu', mobile: '9866123008', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '11-2-6, Pedagantyada, Visakhapatnam', dob: _dobInDays(120, 29)),
-    MockDonor(id: 'D1032', name: 'Hari Prasad Adapa', mobile: '9866123009', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'hari.adapa@example.com', address: '6-7-2, Madhurawada, Visakhapatnam', dob: _dobInDays(11, 44)),
+    MockDonor(id: 'D1032', name: 'Hari Prasad Adapa', mobile: '9866123009', city: 'Visakhapatnam', enrolledByCode: 'ABRD', email: 'hari.adapa@example.com', address: '6-7-2, Madhurawada, Visakhapatnam', isPatron: true, dob: _dobInDays(11, 44)),
     MockDonor(id: 'D1033', name: 'Kalyani Devi Mandava', mobile: '9866123010', city: 'Visakhapatnam', enrolledByCode: 'ABRD', address: '3-9-14, Gajuwaka, Visakhapatnam'),
   ];
 
@@ -333,6 +350,35 @@ class MockData {
     entries.sort((a, b) => b.date.compareTo(a.date));
     return entries;
   }
+
+  static MockDonor? donorById(String id) {
+    for (final d in donors) {
+      if (d.id == id) return d;
+    }
+    return null;
+  }
+
+  /// Swaps in an edited donor (approved detail change / patron enrolment).
+  static void replaceDonor(MockDonor updated) {
+    final i = donors.indexWhere((d) => d.id == updated.id);
+    if (i >= 0) donors[i] = updated;
+  }
+
+  static MockDonation? donationByReceipt(String receiptNumber) {
+    for (final d in donations) {
+      if (d.receiptNumber == receiptNumber) return d;
+    }
+    return null;
+  }
+
+  /// Marks a receipt cancelled (approved CANCEL_RECEIPT request).
+  static void cancelReceipt(String receiptNumber) {
+    final i = donations.indexWhere((d) => d.receiptNumber == receiptNumber);
+    if (i >= 0) donations[i] = donations[i].copyWith(status: DonationStatus.cancelled);
+  }
+
+  /// Adds a receipt issued after a high-value approval (newest first).
+  static void addDonation(MockDonation donation) => donations.insert(0, donation);
 
   static List<MockDonation> donationsForDonor(String donorId) {
     return donations.where((d) => d.donorId == donorId).toList();

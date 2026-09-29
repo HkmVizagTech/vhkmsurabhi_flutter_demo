@@ -3,8 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/mock/donor_insights.dart';
+import 'package:surabhi/core/mock/mock_approvals.dart';
 import 'package:surabhi/core/mock/mock_donor_data.dart';
+import 'package:surabhi/core/mock/mock_drm.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/features/shared/approvals/presentation/pages/my_requests_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/my_follow_ups_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/patron_lifecycle_page.dart';
+import 'package:surabhi/features/shared/drm/presentation/pages/segments_page.dart';
 import 'package:surabhi/features/preacher/donor_care/presentation/pages/donor_care_page.dart';
 import 'package:surabhi/features/shared/festival/presentation/pages/festivals_page.dart';
 import 'package:surabhi/core/widgets/app_bottom_nav_item.dart';
@@ -207,6 +213,60 @@ class PreacherDashboard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          const _SectionTitle('Relationships & Approvals', color: color),
+          const SizedBox(height: 10),
+          // Counts follow the DRM / approval stores live
+          ListenableBuilder(
+            listenable: Listenable.merge([DrmStore.instance, ApprovalStore.instance]),
+            builder: (context, _) {
+              final openFollowUps = DrmStore.instance.openTaskCount(kCurrentPreacherCode);
+              final pendingRequests = ApprovalStore.instance.requestsBy(kCurrentPreacherCode).where((r) => r.isPending).length;
+              return GridView(
+                gridDelegate: kActionCardGridDelegate,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  DashboardActionCard(
+                    icon: Icons.task_alt,
+                    title: 'My Follow-ups',
+                    subtitle: '$openFollowUps open · overdue, today, upcoming',
+                    color: color,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const MyFollowUpsPage(preacherCode: kCurrentPreacherCode, color: color)),
+                    ),
+                  ),
+                  DashboardActionCard(
+                    icon: Icons.outbox_outlined,
+                    title: 'My Requests',
+                    subtitle: '$pendingRequests waiting for approval',
+                    color: color,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const MyRequestsPage(color: color)),
+                    ),
+                  ),
+                  DashboardActionCard(
+                    icon: Icons.filter_alt_outlined,
+                    title: 'Segments',
+                    subtitle: 'Tiers, tags & bulk follow-ups',
+                    color: color,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SegmentsPage(preacherCode: kCurrentPreacherCode, color: color)),
+                    ),
+                  ),
+                  DashboardActionCard(
+                    icon: Icons.workspace_premium_outlined,
+                    title: 'Patron Lifecycle',
+                    subtitle: 'Instalments, pujas & publications',
+                    color: color,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const PatronLifecyclePage(preacherCode: kCurrentPreacherCode, color: color)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -232,16 +292,17 @@ class _FollowUpsCard extends StatelessWidget {
     final birthdays = all.where((i) => i.daysToBirthday != null && i.daysToBirthday! <= 7).length;
     final never = all.where((i) => i.status == CareStatus.never).length;
 
-    Widget item(String count, String label, IconData icon, Color color) {
+    Widget item(String count, String label, IconData icon, Color color, {VoidCallback? onTap}) {
+      final body = Column(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 4),
+          Text(count, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: AppColors.ink)),
+        ],
+      );
       return Expanded(
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 4),
-            Text(count, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: AppColors.ink)),
-          ],
-        ),
+        child: onTap == null ? body : InkWell(borderRadius: BorderRadius.circular(12), onTap: onTap, child: body),
       );
     }
 
@@ -269,6 +330,21 @@ class _FollowUpsCard extends StatelessWidget {
                   item('$birthdays', 'Birthdays\nthis week', Icons.cake, AppColors.deepRed),
                   item('$lapsed', 'Lapsed\ndonors', Icons.hourglass_bottom, AppColors.warningColor),
                   item('$never', 'Enrolled,\nnever gave', Icons.person_outline, AppColors.vaikunthamBlue),
+                  // DRM tasks, not a Donor Care rule - opens My Follow-ups
+                  ListenableBuilder(
+                    listenable: DrmStore.instance,
+                    builder: (context, _) => item(
+                      '${DrmStore.instance.openTaskCount(kCurrentPreacherCode)}',
+                      'Open\nfollow-ups',
+                      Icons.task_alt,
+                      AppColors.approverColor,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const MyFollowUpsPage(preacherCode: kCurrentPreacherCode, color: AppColors.preacherColor),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],
